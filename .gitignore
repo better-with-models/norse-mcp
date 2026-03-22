@@ -1,0 +1,22 @@
+# Environment (never commit)
+container/.env
+
+# Node.js
+node_modules/
+container/mcp-server/node_modules/
+
+# Runtime data (stored in $HOME/.nordic_mcp, not the repo)
+.nordic_mcp/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.log

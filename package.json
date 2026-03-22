@@ -1,0 +1,12 @@
+{
+  "name": "nordic-mcp",
+  "version": "0.1.0",
+  "description": "Domain-agnostic OpenViking vector-database Claude plugin",
+  "private": true,
+  "scripts": {
+    "lint": "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.17.0"
+  }
+}
