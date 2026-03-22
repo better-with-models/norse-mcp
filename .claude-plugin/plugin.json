@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "name": "nordic-mcp",
+  "version": "0.1.0",
+  "description": "Domain-agnostic OpenViking vector-database MCP server. Stores runtime data in $HOME/.nordic_mcp. Requires the Docker stack to be running.",
+  "mcpServers": {
+    "nordic-mcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://127.0.0.1:1933/mcp"],
+      "description": "OpenViking MCP server — 40 tools for vector storage, search, sessions, and content management"
+    }
+  }
+}
