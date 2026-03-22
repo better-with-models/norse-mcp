@@ -1,0 +1,27 @@
+name: nordic-mcp
+
+services:
+  nordic-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nordic-mcp:${OPENVIKING_VERSION:-v0.2.9}
+    container_name: nordic-mcp
+    restart: unless-stopped
+    ports:
+      - "1933:1933"
+    environment:
+      OPENVIKING_ROOT_API_KEY: ${OPENVIKING_ROOT_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENVIKING_EMBEDDING_MODEL: ${OPENVIKING_EMBEDDING_MODEL:-text-embedding-3-large}
+      OPENVIKING_EMBEDDING_DIM: ${OPENVIKING_EMBEDDING_DIM:-3072}
+      OPENVIKING_VLM_MODEL: ${OPENVIKING_VLM_MODEL:-gpt-4-vision-preview}
+      OPENVIKING_DATA: /data/openviking-data
+    volumes:
+      - ${NORDIC_MCP_DATA:-~/.nordic_mcp/openviking-data}:/data/openviking-data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:1933/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s

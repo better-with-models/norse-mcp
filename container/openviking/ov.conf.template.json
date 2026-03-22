@@ -1,0 +1,23 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 1934
+  },
+  "storage": {
+    "path": "${OPENVIKING_DATA}"
+  },
+  "auth": {
+    "root_api_key": "${OPENVIKING_ROOT_API_KEY}"
+  },
+  "embedding": {
+    "model": "${OPENVIKING_EMBEDDING_MODEL}",
+    "dimension": "${OPENVIKING_EMBEDDING_DIM}",
+    "provider": "openai",
+    "api_key": "${OPENAI_API_KEY}"
+  },
+  "vlm": {
+    "model": "${OPENVIKING_VLM_MODEL}",
+    "provider": "openai",
+    "api_key": "${OPENAI_API_KEY}"
+  }
+}
