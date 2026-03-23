@@ -7,13 +7,13 @@ Start the nordic-mcp Docker stack and verify all endpoints are healthy.
 1. Change into the container directory:
 
    ```bash
-   cd "$(git rev-parse --show-toplevel)/nordic-mcp/container"
+   cd "$(git rev-parse --show-toplevel)/container"
    ```
 
 2. Confirm `.env` exists (not just `.env.example`):
 
    ```bash
-   test -f .env || echo "ERROR: .env missing — run /nordic-mcp-config first"
+   test -f .env || { echo "ERROR: .env missing — run /nordic-mcp-config first"; exit 1; }
    ```
 
 3. Start the stack in detached mode:
@@ -57,5 +57,5 @@ MCP endpoint: 200
 Run `/nordic-mcp-status` for detailed diagnostics, or check logs:
 
 ```bash
-cd container && docker compose logs nordic-mcp
+cd "$(git rev-parse --show-toplevel)/container" && docker compose logs nordic-mcp
 ```

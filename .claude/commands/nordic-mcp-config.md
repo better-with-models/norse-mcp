@@ -10,8 +10,8 @@ Work through each item in order. Check off each one as you complete it.
 ### 1. Copy the example file
 
 ```bash
-cp "$(git rev-parse --show-toplevel)/nordic-mcp/container/.env.example" \
-   "$(git rev-parse --show-toplevel)/nordic-mcp/container/.env"
+cp "$(git rev-parse --show-toplevel)/container/.env.example" \
+   "$(git rev-parse --show-toplevel)/container/.env"
 ```
 
 ### 2. Set the OpenViking root API key
@@ -50,8 +50,8 @@ mkdir -p "$NORDIC_MCP_DATA"
 ### 5. (Optional) Change embedding model or dimensions
 
 ```text
-OPENVIKING_EMBEDDING_MODEL=text-embedding-3-large
-OPENVIKING_EMBEDDING_DIM=3072
+OPENVIKING_EMBED_MODEL=text-embedding-3-large
+OPENVIKING_EMBED_DIMENSION=3072
 ```
 
 Note: changing the model after data is stored will break existing collections.
@@ -59,15 +59,18 @@ Note: changing the model after data is stored will break existing collections.
 ### 6. Verify the file
 
 ```bash
-cat "$(git rev-parse --show-toplevel)/nordic-mcp/container/.env"
+cat "$(git rev-parse --show-toplevel)/container/.env"
 ```
 
 Confirm no placeholder values remain.
 
 ### 7. Run the preflight check
 
+> **Prerequisite:** Python 3 must be installed (`python3 --version`).
+> On Windows install it with `winget install Python.Python.3.11` or from https://python.org.
+
 ```bash
-python "$(git rev-parse --show-toplevel)/nordic-mcp/scripts/preflight.py"
+python3 "$(git rev-parse --show-toplevel)/scripts/preflight.py"
 ```
 
 All checks should pass before running `/nordic-mcp-start`.

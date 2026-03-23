@@ -7,7 +7,7 @@ Check the health of all nordic-mcp endpoints and report status.
 1. Check Docker container status:
 
    ```bash
-   cd "$(git rev-parse --show-toplevel)/nordic-mcp/container" && docker compose ps
+   cd "$(git rev-parse --show-toplevel)/container" && docker compose ps
    ```
 
 2. Check REST health endpoint:
@@ -31,7 +31,7 @@ Check the health of all nordic-mcp endpoints and report status.
 
    ```bash
    OPENVIKING_ROOT_API_KEY=$(grep OPENVIKING_ROOT_API_KEY \
-     "$(git rev-parse --show-toplevel)/nordic-mcp/container/.env" \
+     "$(git rev-parse --show-toplevel)/container/.env" \
      | cut -d= -f2)
    curl -s http://127.0.0.1:1933/api/v1/system/info \
      -H "Authorization: Bearer $OPENVIKING_ROOT_API_KEY" \
@@ -52,7 +52,7 @@ Check the health of all nordic-mcp endpoints and report status.
 ## If unhealthy
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/nordic-mcp/container"
+cd "$(git rev-parse --show-toplevel)/container"
 docker compose logs nordic-mcp --tail=50
 ```
 

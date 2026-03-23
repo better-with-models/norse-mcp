@@ -7,7 +7,7 @@ Stop the nordic-mcp Docker stack.
 1. Change into the container directory:
 
    ```bash
-   cd "$(git rev-parse --show-toplevel)/nordic-mcp/container"
+   cd "$(git rev-parse --show-toplevel)/container"
    ```
 
 2. Stop and remove containers (data in `$HOME/.nordic_mcp/` is preserved):
