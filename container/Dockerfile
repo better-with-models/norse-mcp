@@ -1,44 +1,43 @@
+# syntax=docker/dockerfile:1.9
+
 ARG OPENVIKING_VERSION=v0.2.9
 
-# ── nordic-mcp image ─────────────────────────────────────────────────────────
-# Single-stage image based on the official OpenViking release.
-# Adds:
-#   - nginx (reverse proxy: 1933 → REST 1934 + MCP 4050)
-#   - Node.js + the nordic-mcp MCP server
-#   - supervisord (process manager)
-FROM ghcr.io/volcengine/openviking:${OPENVIKING_VERSION}
+# ── nordic-mcp: OpenViking + nginx + Node.js MCP server ──────────────────────
+FROM ghcr.io/volcengine/openviking:${OPENVIKING_VERSION} AS openviking-mcp
 
-# Install runtime dependencies
+# Base image is Debian 13 (trixie) — use apt-get
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx \
-    supervisor \
-    curl \
-    nodejs \
-    npm \
+        nginx \
+        nodejs \
+        npm \
+        supervisor \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
-# ── MCP server ───────────────────────────────────────────────────────────────
-WORKDIR /app/mcp-server
-COPY mcp-server/package.json mcp-server/package-lock.json* ./
-RUN npm ci --omit=dev
-COPY mcp-server/server.mjs ./
-COPY mcp-server/src/ ./src/
+# nginx config (replaces global config — full worker/upstream/server block)
+COPY mcp-server/nginx.conf /etc/nginx/nginx.conf
 
-# ── nginx config ─────────────────────────────────────────────────────────────
-COPY mcp-server/nginx.conf /etc/nginx/sites-available/nordic-mcp
-RUN ln -sf /etc/nginx/sites-available/nordic-mcp /etc/nginx/sites-enabled/nordic-mcp \
-    && rm -f /etc/nginx/sites-enabled/default
+# supervisord config and entrypoint
+COPY mcp-server/supervisord.conf /app/openviking-mcp/supervisord.conf
+COPY mcp-server/start.sh         /usr/local/bin/start-openviking-mcp.sh
 
-# ── supervisord config ────────────────────────────────────────────────────────
-COPY mcp-server/supervisord.conf /etc/supervisor/conf.d/nordic-mcp.conf
+# Node.js MCP server — install deps at build time
+COPY mcp-server/ /app/openviking-mcp/
+RUN cd /app/openviking-mcp && npm ci --omit=dev
 
-# ── OpenViking config template ────────────────────────────────────────────────
+# OpenViking config template (rendered at startup by render-openviking-config.py)
 COPY openviking/ov.conf.template.json /app/ov.conf.template.json
 
-# ── Entrypoint ────────────────────────────────────────────────────────────────
-COPY mcp-server/start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+# Config render script (standalone: no volume mount required)
+COPY scripts/ /app/scripts/
+
+RUN chmod +x /usr/local/bin/start-openviking-mcp.sh \
+    && mkdir -p /tmp/nginx_client_body /tmp/nginx_proxy
+
+ENV OPENVIKING_INTERNAL_PORT=1934
+ENV OPENVIKING_MCP_INTERNAL_PORT=4050
 
 EXPOSE 1933
 
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["/usr/local/bin/start-openviking-mcp.sh"]

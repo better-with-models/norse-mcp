@@ -5,23 +5,43 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: openviking-mcp
+      args:
+        OPENVIKING_VERSION: ${OPENVIKING_VERSION:-v0.2.9}
     image: nordic-mcp:${OPENVIKING_VERSION:-v0.2.9}
     container_name: nordic-mcp
     restart: unless-stopped
     ports:
-      - "1933:1933"
+      - "${OPENVIKING_PORT:-1933}:1933"
     environment:
-      OPENVIKING_ROOT_API_KEY: ${OPENVIKING_ROOT_API_KEY}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      OPENVIKING_EMBEDDING_MODEL: ${OPENVIKING_EMBEDDING_MODEL:-text-embedding-3-large}
-      OPENVIKING_EMBEDDING_DIM: ${OPENVIKING_EMBEDDING_DIM:-3072}
+      OPENVIKING_TEMPLATE_PATH: /app/ov.conf.template.json
+      OPENVIKING_CONFIG_OUTPUT: /app/data/ov.conf
+      OPENVIKING_ROOT_API_KEY: ${OPENVIKING_ROOT_API_KEY:-change-me}
+      OPENVIKING_STORAGE_WORKSPACE: ${OPENVIKING_STORAGE_WORKSPACE:-/app/data/workspace}
+      OPENVIKING_LOG_LEVEL: ${OPENVIKING_LOG_LEVEL:-INFO}
+      OPENVIKING_LOG_OUTPUT: ${OPENVIKING_LOG_OUTPUT:-stdout}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENVIKING_EMBED_API_BASE: ${OPENVIKING_EMBED_API_BASE:-https://api.openai.com/v1}
+      OPENVIKING_EMBED_API_KEY: ${OPENVIKING_EMBED_API_KEY:-}
+      OPENVIKING_EMBED_PROVIDER: ${OPENVIKING_EMBED_PROVIDER:-openai}
+      OPENVIKING_EMBED_DIMENSION: ${OPENVIKING_EMBED_DIMENSION:-3072}
+      OPENVIKING_EMBED_MODEL: ${OPENVIKING_EMBED_MODEL:-text-embedding-3-large}
+      OPENVIKING_VLM_API_BASE: ${OPENVIKING_VLM_API_BASE:-https://api.openai.com/v1}
+      OPENVIKING_VLM_API_KEY: ${OPENVIKING_VLM_API_KEY:-}
+      OPENVIKING_VLM_PROVIDER: ${OPENVIKING_VLM_PROVIDER:-openai}
       OPENVIKING_VLM_MODEL: ${OPENVIKING_VLM_MODEL:-gpt-4-vision-preview}
-      OPENVIKING_DATA: /data/openviking-data
+      OPENVIKING_VLM_MAX_CONCURRENT: ${OPENVIKING_VLM_MAX_CONCURRENT:-100}
+      OPENVIKING_HOST: 127.0.0.1
+      OPENVIKING_INTERNAL_PORT: ${OPENVIKING_INTERNAL_PORT:-1934}
+      OPENVIKING_COLLECTION_PATH: ${OPENVIKING_COLLECTION_PATH:-/}
+      OPENVIKING_INDEX_NAME: ${OPENVIKING_INDEX_NAME:-}
     volumes:
-      - ${NORDIC_MCP_DATA:-~/.nordic_mcp/openviking-data}:/data/openviking-data
+      - type: bind
+        source: ${NORDIC_MCP_DATA:-~/.nordic_mcp/openviking-data}
+        target: /app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:1933/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-      start_period: 15s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:1933/health > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s

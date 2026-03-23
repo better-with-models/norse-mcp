@@ -1,54 +1,80 @@
-/**
- * HTTP client facade for the OpenViking REST API.
- */
-import { config } from './config.mjs';
+// ── OpenViking MCP — HTTP client facade ────────────────────────────────────────
+//
+// createClient(config) → { fetch: ovFetch, formPost, buildTenantHeaders }
+//
+// ovFetch(path, opts?, tenantHeaders?)
+//   - Injects Authorization + Content-Type headers
+//   - Returns the `result` field from the OpenViking envelope on success
+//   - Throws OvError on non-2xx responses
+//
+// formPost(path, formData, tenantHeaders?)
+//   - Multipart upload variant (no Content-Type override — let fetch set boundary)
+//   - Same auth injection and error normalisation
+//
+// buildTenantHeaders({ account_id?, user_id?, agent_id? })
+//   - Returns the subset of X-OpenViking-* headers that are non-null
 
-export async function ovGet(path, params = {}) {
-  const url = new URL(path, config.baseUrl);
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+export class OvError extends Error {
+  constructor(method, path, status, body) {
+    super(`OpenViking ${method} ${path} → ${status}: ${body}`);
+    this.name  = 'OvError';
+    this.method = method;
+    this.path   = path;
+    this.status = status;
+    this.body   = body;
   }
-  const res = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${config.apiKey}` },
-  });
-  if (!res.ok) throw new Error(`GET ${path} → ${res.status}: ${await res.text()}`);
-  return res.json();
 }
 
-export async function ovPost(path, body = {}) {
-  const url = new URL(path, config.baseUrl);
-  const res = await fetch(url.toString(), {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${config.apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`POST ${path} → ${res.status}: ${await res.text()}`);
-  return res.json();
+export function buildTenantHeaders({ account_id, user_id, agent_id } = {}) {
+  const h = {};
+  if (account_id != null) h['X-OpenViking-Account'] = String(account_id);
+  if (user_id    != null) h['X-OpenViking-User']    = String(user_id);
+  if (agent_id   != null) h['X-OpenViking-Agent']   = String(agent_id);
+  return h;
 }
 
-export async function ovPut(path, body = {}) {
-  const url = new URL(path, config.baseUrl);
-  const res = await fetch(url.toString(), {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${config.apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`PUT ${path} → ${res.status}: ${await res.text()}`);
-  return res.json();
-}
+export function createClient(config) {
+  const { ovBase, ovKey } = config;
 
-export async function ovDelete(path) {
-  const url = new URL(path, config.baseUrl);
-  const res = await fetch(url.toString(), {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${config.apiKey}` },
-  });
-  if (!res.ok) throw new Error(`DELETE ${path} → ${res.status}: ${await res.text()}`);
-  return res.status === 204 ? {} : res.json();
+  const authHeader = { Authorization: `Bearer ${ovKey}` };
+
+  async function ovFetch(path, opts = {}, tenantHeaders = {}) {
+    const method = opts.method ?? 'GET';
+    const res = await fetch(`${ovBase}${path}`, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeader,
+        ...tenantHeaders,
+        ...(opts.headers ?? {}),
+      },
+    });
+    const text = await res.text();
+    if (!res.ok) throw new OvError(method, path, res.status, text);
+    try {
+      const json = JSON.parse(text);
+      // Return the `result` field when present; fall back to full parsed body.
+      return json.result !== undefined ? json.result : json;
+    } catch {
+      return text;
+    }
+  }
+
+  async function formPost(path, formData, tenantHeaders = {}) {
+    const res = await fetch(`${ovBase}${path}`, {
+      method: 'POST',
+      headers: { ...authHeader, ...tenantHeaders },
+      body: formData,
+    });
+    const text = await res.text();
+    if (!res.ok) throw new OvError('POST', path, res.status, text);
+    try {
+      const json = JSON.parse(text);
+      return json.result !== undefined ? json.result : json;
+    } catch {
+      return text;
+    }
+  }
+
+  return { fetch: ovFetch, formPost, buildTenantHeaders };
 }
