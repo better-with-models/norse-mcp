@@ -1,6 +1,6 @@
 {
   "name": "nordic-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Domain-agnostic OpenViking vector-database Claude plugin",
   "private": true,
   "scripts": {

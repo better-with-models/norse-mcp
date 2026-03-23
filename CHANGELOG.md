@@ -5,6 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.1.1] — 2026-03-23
+
+### Changed
+
+- Bumped the release metadata from `0.1.0` to `0.1.1` across the root package,
+  plugin manifest, marketplace manifest, and README.
+- Updated release notes for the 2026-03-23 patch release.
+
 ## [0.1.0] — 2026-03-22
 
 ### Added

@@ -3,13 +3,13 @@
   "marketplace": {
     "name": "nordic-mcp marketplace",
     "description": "Single-plugin marketplace for the nordic-mcp OpenViking vector-database Claude plugin.",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
       "id": "nordic-mcp",
       "name": "nordic-mcp",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Domain-agnostic OpenViking vector-database MCP server with 40 tools for vector storage, search, sessions, and content management. Stores runtime data in $HOME/.nordic_mcp.",
       "pluginFile": "plugin.json",
       "tags": ["vector-database", "mcp", "openviking", "search", "storage"],

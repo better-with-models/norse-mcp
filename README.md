@@ -5,7 +5,7 @@ Domain-agnostic OpenViking vector-database Claude plugin and single-plugin marke
 | Field | Value |
 |-------|-------|
 | Plugin ID | `nordic-mcp` |
-| Version | 0.1.0 |
+| Version | 0.1.1 |
 | MCP server | OpenViking v0.2.9 via Docker |
 | Public port | 1933 |
 | Data directory | `$HOME/.nordic_mcp/` |

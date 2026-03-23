@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "nordic-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Domain-agnostic OpenViking vector-database MCP server. Stores runtime data in $HOME/.nordic_mcp. Requires the Docker stack to be running.",
   "mcpServers": {
     "nordic-mcp": {
