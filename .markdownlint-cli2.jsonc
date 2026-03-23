@@ -13,6 +13,7 @@
   },
   "ignores": [
     "node_modules/**",
-    "container/mcp-server/node_modules/**"
+    "container/mcp-server/node_modules/**",
+    "docs/superpowers/**"
   ]
 }

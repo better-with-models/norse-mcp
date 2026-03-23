@@ -38,6 +38,7 @@ volume mount is correct. Check `docker compose logs` for permission errors.
 **Symptom:** `docker compose up` fails with "port already allocated".
 
 **Fix:** Find and stop the conflicting process:
+
 ```bash
 lsof -i :1933     # macOS/Linux
 netstat -ano | findstr :1933  # Windows
@@ -53,6 +54,7 @@ then poll `nordic_get_task` for async completion.
 ## P7: Search returns irrelevant results
 
 **Diagnosis steps:**
+
 1. Confirm the correct collection name.
 2. Try `nordic_hybrid_search` with lower `alpha` (more keyword weight).
 3. Check item count with `nordic_get_collection` — empty collection returns no results.

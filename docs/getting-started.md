@@ -18,7 +18,7 @@ cp .env.example .env
 
 Open `.env` and set:
 
-```
+```text
 OPENVIKING_ROOT_API_KEY=your-secret-key-here
 OPENAI_API_KEY=sk-...
 ```
@@ -53,7 +53,7 @@ curl http://127.0.0.1:1933/health
 
 In Claude desktop or Claude Code, install the plugin from:
 
-```
+```text
 nordic-mcp/.claude-plugin/plugin.json
 ```
 

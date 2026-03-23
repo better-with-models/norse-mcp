@@ -18,7 +18,7 @@ cp "$(git rev-parse --show-toplevel)/nordic-mcp/container/.env.example" \
 
 Edit `container/.env` and set a strong random value for:
 
-```
+```text
 OPENVIKING_ROOT_API_KEY=<your-secret-here>
 ```
 
@@ -26,7 +26,7 @@ This key is required for all authenticated REST and MCP calls.
 
 ### 3. Set your OpenAI API key
 
-```
+```text
 OPENAI_API_KEY=sk-...
 ```
 
@@ -37,7 +37,7 @@ Required for embedding generation (`text-embedding-3-large`) and VLM calls.
 The default stores data at `$HOME/.nordic_mcp/openviking-data`.
 To change it, set:
 
-```
+```text
 NORDIC_MCP_DATA=/your/preferred/path
 ```
 
@@ -49,7 +49,7 @@ mkdir -p "$NORDIC_MCP_DATA"
 
 ### 5. (Optional) Change embedding model or dimensions
 
-```
+```text
 OPENVIKING_EMBEDDING_MODEL=text-embedding-3-large
 OPENVIKING_EMBEDDING_DIM=3072
 ```

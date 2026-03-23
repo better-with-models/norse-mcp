@@ -60,6 +60,7 @@ curl -s http://127.0.0.1:1933/health
 Expected: `{"status":"ok"}`
 
 If the endpoint is unreachable or returns non-200:
+
 - Tell the user the stack is down
 - Direct them to run `/nordic-mcp-start` or `cd container && docker compose up -d`
 - Do **not** attempt MCP tool calls against a down stack

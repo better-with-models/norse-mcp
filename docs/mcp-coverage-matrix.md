@@ -55,13 +55,13 @@
 | `list_collection` | `nordic_list_collections` |
 | `delete_data` | `nordic_delete_item` |
 
-**Total exposed tools: 40 primary + 5 aliases = 45**
+Total exposed tools: 40 primary + 5 aliases = 45
 
 ## Authentication
 
 All endpoints except `/health` require:
 
-```
+```text
 Authorization: Bearer <OPENVIKING_ROOT_API_KEY>
 ```
 
@@ -70,7 +70,7 @@ from `container/.env` at startup. Claude does not need to manage auth headers.
 
 ## Base URL
 
-```
+```text
 http://127.0.0.1:1933
 ```
 

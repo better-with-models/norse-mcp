@@ -4,7 +4,7 @@ Standard execution patterns for common nordic-mcp operations.
 
 ## Pattern 1: First-time setup
 
-```
+```text
 1. /nordic-mcp-config           → configure .env
 2. python scripts/preflight.py  → verify environment
 3. /nordic-mcp-start            → start stack, wait for health
@@ -13,7 +13,7 @@ Standard execution patterns for common nordic-mcp operations.
 
 ## Pattern 2: Ingest a document
 
-```
+```text
 1. nordic_create_collection     → create collection if new
 2. nordic_chunk_and_store       → chunk and embed text
    OR
@@ -23,7 +23,7 @@ Standard execution patterns for common nordic-mcp operations.
 
 ## Pattern 3: Search and retrieve
 
-```
+```text
 1. nordic_search                → semantic search (default)
    OR
    nordic_hybrid_search         → when keyword precision matters
@@ -33,7 +33,7 @@ Standard execution patterns for common nordic-mcp operations.
 
 ## Pattern 4: Bulk ingest via pack
 
-```
+```text
 1. nordic_create_pack           → create pack namespace
 2. nordic_ingest_pack           → upload items in batches
 3. nordic_get_task              → poll async task status
@@ -42,7 +42,7 @@ Standard execution patterns for common nordic-mcp operations.
 
 ## Pattern 5: Multi-turn session
 
-```
+```text
 1. nordic_create_session        → create session context
 2. nordic_search                → search within session
 3. nordic_upsert_item           → add derived items
@@ -51,7 +51,7 @@ Standard execution patterns for common nordic-mcp operations.
 
 ## Pattern 6: Shutdown
 
-```
+```text
 1. /nordic-mcp-stop             → docker compose down
    (data in $HOME/.nordic_mcp/ is preserved)
 ```

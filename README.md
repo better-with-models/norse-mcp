@@ -40,7 +40,7 @@ Or use the slash command from within Claude: `/nordic-mcp-start`
 
 ## Repository layout
 
-```
+```text
 nordic-mcp/
 ├── README.md                    # this file
 ├── AGENTS.md                    # agent and automation guidance

@@ -21,6 +21,7 @@ Load this skill when the user wants to:
 - Understand all available tools → [MCP tool reference](#mcp-tool-reference--40-tools-13-families)
 
 Related docs:
+
 - [docs/mcp-coverage-matrix.md](../../docs/mcp-coverage-matrix.md) — exhaustive REST endpoint map
 - [docs/getting-started.md](../../docs/getting-started.md) — first-use walkthrough
 - [references/workflow.md](references/workflow.md) — execution patterns
@@ -54,7 +55,7 @@ Before calling search tools, confirm:
 
 ### Ingest pattern
 
-```
+```text
 1. nordic_health_check          → verify stack is up
 2. nordic_create_collection     → idempotent — OK to call on existing collection
 3. nordic_chunk_and_store       → for documents > 512 tokens
@@ -64,7 +65,7 @@ Before calling search tools, confirm:
 
 ### Search pattern
 
-```
+```text
 1. nordic_search                → semantic vector search (default choice)
    OR nordic_hybrid_search      → when keyword precision matters (alpha < 0.7)
    OR nordic_multi_collection_search → when content spans collections
@@ -76,7 +77,7 @@ Before calling search tools, confirm:
 
 For bulk ingestion (> 100 items or large documents):
 
-```
+```text
 1. nordic_create_pack           → create named bundle
 2. nordic_ingest_pack           → upload items in batches (triggers async task)
 3. nordic_get_task              → poll until status = "completed"
@@ -86,7 +87,7 @@ For bulk ingestion (> 100 items or large documents):
 
 ## Architecture
 
-```
+```text
 Claude (via MCP) ─→ npx mcp-remote http://127.0.0.1:1933/mcp
                           │
                     nginx (port 1933)
@@ -265,6 +266,7 @@ OpenViking REST API as of that release. If the OpenViking version is upgraded,
 verify tool behavior against the upstream changelog before using this skill.
 
 Key runtime facts:
+
 - Public endpoint: `http://127.0.0.1:1933`
 - MCP path: `/mcp` (via nginx)
 - REST base: `/api/v1/`
@@ -295,7 +297,7 @@ Before reporting a task complete:
 
 ## Example Prompts
 
-```
+```text
 "Store these meeting notes in my notes collection"
 "Search for anything about budget decisions"
 "Create a new collection called project-docs and upload this document"

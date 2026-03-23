@@ -52,6 +52,7 @@ built from `container/Dockerfile`. Internally it runs three processes via superv
 | nginx | — | 1933 (public) |
 
 nginx routes:
+
 - `GET /health` → openviking REST
 - `POST /mcp` → MCP server
 - All other paths → openviking REST
@@ -85,6 +86,7 @@ python scripts/preflight.py
 ## Escalation cues
 
 Pause and confirm before:
+
 - Changing the OpenViking version in `container/Dockerfile`
 - Adding or removing MCP tools (requires SKILL.md and coverage matrix update)
 - Changing the public port (1933) — coordinate with `.claude-plugin/plugin.json`

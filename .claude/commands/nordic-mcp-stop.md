@@ -24,7 +24,7 @@ Stop the nordic-mcp Docker stack.
 
 ## Expected output
 
-```
+```text
 WARN[0000] ...
 NAME    IMAGE   COMMAND   SERVICE   CREATED   STATUS    PORTS
 ```

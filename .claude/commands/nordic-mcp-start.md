@@ -47,7 +47,7 @@ Start the nordic-mcp Docker stack and verify all endpoints are healthy.
 
 ## Expected output
 
-```
+```text
 nordic-mcp is healthy (attempt N)
 MCP endpoint: 200
 ```
