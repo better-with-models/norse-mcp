@@ -19,42 +19,54 @@ import { register as registerObserver }    from './src/tools/observer.mjs';
 import { register as registerAdmin }       from './src/tools/admin.mjs';
 import { register as registerCompat }      from './src/tools/compat.mjs';
 
-const server = new McpServer({ name: 'nordic-mcp', version: '2.0.0' });
 const client = createClient(Config);
 
-for (const reg of [
-  registerHealth,
-  registerSystem,
-  registerResources,
-  registerSkills,
-  registerPack,
-  registerFilesystem,
-  registerContent,
-  registerSearch,
-  registerRelations,
-  registerSessions,
-  registerTasks,
-  registerObserver,
-  registerAdmin,
-  registerCompat,
-]) {
-  reg(server, client, Config);
-}
+const TOOL_REGS = [
+  registerHealth, registerSystem, registerResources, registerSkills,
+  registerPack, registerFilesystem, registerContent, registerSearch,
+  registerRelations, registerSessions, registerTasks, registerObserver,
+  registerAdmin, registerCompat,
+];
 
-const transport = new StreamableHTTPServerTransport({
-  sessionIdGenerator: () => crypto.randomUUID(),
-});
+/** Active sessions: sessionId → StreamableHTTPServerTransport */
+const sessions = new Map();
 
 const httpServer = http.createServer(async (req, res) => {
-  if (req.url?.startsWith('/mcp')) {
-    await transport.handleRequest(req, res);
-  } else {
+  if (!req.url?.startsWith('/mcp')) {
     res.writeHead(404);
     res.end('Not found');
+    return;
   }
-});
 
-await server.connect(transport);
+  const sessionId = req.headers['mcp-session-id'];
+
+  // Route an existing session
+  if (sessionId) {
+    const existing = sessions.get(sessionId);
+    if (existing) {
+      await existing.handleRequest(req, res);
+      return;
+    }
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Session not found' }));
+    return;
+  }
+
+  // New session — create a fresh server + transport
+  const sessionServer = new McpServer({ name: 'nordic-mcp', version: '2.0.0' });
+  for (const reg of TOOL_REGS) reg(sessionServer, client, Config);
+
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => crypto.randomUUID(),
+    onsessioninitialized: (id) => sessions.set(id, transport),
+  });
+  transport.onclose = () => {
+    if (transport.sessionId) sessions.delete(transport.sessionId);
+  };
+
+  await sessionServer.connect(transport);
+  await transport.handleRequest(req, res);
+});
 httpServer.listen(Config.mcpPort, '127.0.0.1', () =>
   console.log(`nordic-mcp listening on 127.0.0.1:${Config.mcpPort}`)
 );
