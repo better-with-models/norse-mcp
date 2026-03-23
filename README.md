@@ -20,6 +20,8 @@ Domain-agnostic OpenViking vector-database Claude plugin and single-plugin marke
 - **Persistent vector storage** — LevelDB-backed collections stored outside the
   repo at `$HOME/.nordic_mcp/openviking-data`
 - **Claude plugin + marketplace** — install directly from `.claude-plugin/`
+- **Codex skill + MCP setup** — install the Codex skill from `codex/skills/`
+  and configure Codex MCP separately
 
 ## Quick start
 
@@ -37,6 +39,17 @@ curl http://127.0.0.1:1933/health
 ```
 
 Or use the slash command from within Claude: `/nordic-mcp-start`
+
+## Codex
+
+Codex installation is separate from Claude plugin installation:
+
+- Install the Codex skill from `codex/skills/nordic-mcp-guide`
+- Configure Codex MCP to connect to `http://127.0.0.1:1933/mcp` using
+  `npx mcp-remote`
+
+See [docs/codex-install.md](docs/codex-install.md) for GitHub and local install
+paths.
 
 ## Repository layout
 
@@ -76,6 +89,9 @@ nordic-mcp/
 │
 ├── Skills/
 │   └── nordic-mcp-guide/        # complete usage skill
+├── codex/
+│   └── skills/
+│       └── nordic-mcp-guide/    # self-contained Codex-installable skill
 │
 ├── agents/
 │   └── nordic-mcp-orchestrator.md
@@ -99,5 +115,6 @@ npm run lint    # markdownlint-cli2 on all Markdown files
 
 - [AGENTS.md](AGENTS.md) — automation guidance
 - [CONCEPTS.md](CONCEPTS.md) — vocabulary
+- [docs/codex-install.md](docs/codex-install.md) — Codex skill + MCP setup
 - [docs/getting-started.md](docs/getting-started.md) — first-use walkthrough
 - [docs/mcp-coverage-matrix.md](docs/mcp-coverage-matrix.md) — full tool reference

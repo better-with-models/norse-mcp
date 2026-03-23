@@ -6,6 +6,7 @@
 
 - **1 plugin** (`nordic-mcp`) registered in `.claude-plugin/`
 - **1 skill** (`nordic-mcp-guide`) in `Skills/`
+- **1 Codex-installable skill package** in `codex/skills/`
 - **1 agent** (`nordic-mcp-orchestrator`) in `agents/`
 - **4 slash commands** in `.claude/commands/`
 - **Docker stack** in `container/` (OpenViking + nginx + Node.js MCP)
@@ -21,6 +22,7 @@ All runtime data is stored outside the repo at `$HOME/.nordic_mcp/`.
 | `.claude-plugin/` | Plugin and marketplace metadata |
 | `.claude/commands/` | Slash commands for start/stop/status/config |
 | `Skills/nordic-mcp-guide/` | Complete skill for using the MCP server |
+| `codex/skills/nordic-mcp-guide/` | Self-contained Codex-installable skill package |
 | `agents/` | Orchestrator agent |
 | `docs/` | Human-facing documentation |
 | `scripts/` | Validation and preflight scripts |

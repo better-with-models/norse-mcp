@@ -5,6 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Added a self-contained Codex-installable skill package at
+  `codex/skills/nordic-mcp-guide`.
+- Added Codex installation guidance in `docs/codex-install.md`.
+- Added a reusable Codex MCP config example in
+  `docs/examples/codex-mcp-config.json`.
+
+### Changed
+
+- Updated `README.md` and `docs/getting-started.md` to explain that Claude
+  plugin installation and Codex installation use different client surfaces.
+
 ## [0.1.1] — 2026-03-23
 
 ### Changed
