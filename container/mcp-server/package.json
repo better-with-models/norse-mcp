@@ -6,7 +6,7 @@
   "main": "server.mjs",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test 'test/**/*.test.mjs'"
+    "test": "node --test test/admin.test.mjs test/client.test.mjs test/compat.test.mjs test/filesystem.test.mjs test/relations.test.mjs test/resources.test.mjs test/search.test.mjs test/sessions.test.mjs test/system.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.0",
