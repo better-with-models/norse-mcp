@@ -1,0 +1,140 @@
+name: CI — nordic-mcp
+
+on:
+  push:
+    paths:
+      - "**/*.md"
+      - "**/*.mjs"
+      - "**/*.json"
+      - "container/**"
+      - ".claude-plugin/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "**/*.mjs"
+      - "**/*.json"
+      - "container/**"
+      - ".claude-plugin/**"
+      - ".github/workflows/ci.yml"
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Job 1: Lint all Markdown with markdownlint-cli2
+  # ─────────────────────────────────────────────────────────────
+  lint-markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 2: Validate the Claude plugin manifest
+  # ─────────────────────────────────────────────────────────────
+  validate-plugin:
+    name: Plugin manifest validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Validate JSON and version consistency
+        run: |
+          python3 - <<'PYEOF'
+          import json, sys
+
+          def load(path):
+              with open(path) as f:
+                  return json.load(f)
+
+          plugin    = load(".claude-plugin/plugin.json")
+          market    = load(".claude-plugin/marketplace.json")
+          root_pkg  = load("package.json")
+
+          errors = []
+
+          # Required plugin keys
+          for key in ("schemaVersion", "name", "version", "mcpServers"):
+              if key not in plugin:
+                  errors.append(f"plugin.json missing key: {key}")
+
+          # MCP server entry
+          if "nordic-mcp" not in plugin.get("mcpServers", {}):
+              errors.append("plugin.json mcpServers missing 'nordic-mcp' entry")
+          else:
+              srv = plugin["mcpServers"]["nordic-mcp"]
+              if srv.get("command") != "npx":
+                  errors.append(f"plugin.json mcpServers.nordic-mcp.command should be 'npx', got '{srv.get('command')}'")
+              if "mcp-remote" not in srv.get("args", []):
+                  errors.append("plugin.json mcpServers.nordic-mcp.args should include 'mcp-remote'")
+
+          # Version consistency
+          plugin_ver  = plugin.get("version")
+          market_ver  = market.get("marketplace", {}).get("version")
+          plugins_ver = market.get("plugins", [{}])[0].get("version")
+          root_ver    = root_pkg.get("version")
+
+          for (label, val) in [
+              ("marketplace.marketplace.version", market_ver),
+              ("marketplace.plugins[0].version",  plugins_ver),
+              ("package.json version",             root_ver),
+          ]:
+              if val != plugin_ver:
+                  errors.append(f"Version mismatch: plugin.json={plugin_ver}  {label}={val}")
+
+          if errors:
+              for e in errors:
+                  print(f"::error::{e}")
+              sys.exit(1)
+
+          print(f"Plugin manifest OK  (version {plugin_ver})")
+          print(f"  plugin.json       : {plugin_ver}")
+          print(f"  marketplace       : {market_ver} / {plugins_ver}")
+          print(f"  package.json      : {root_ver}")
+          PYEOF
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 3: Run the MCP server unit test suite
+  # ─────────────────────────────────────────────────────────────
+  test-mcp-server:
+    name: MCP server tests (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["18", "20", "22"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Node ${{ matrix.node-version }}
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: container/mcp-server/package-lock.json
+
+      - name: Install MCP server dependencies
+        working-directory: container/mcp-server
+        run: npm ci
+
+      - name: Run tests
+        working-directory: container/mcp-server
+        run: npm test
