@@ -53,6 +53,8 @@ Before calling search tools, confirm:
   artifacts; they do not synthesize summaries on demand
 - `ov_resources_create` keeps the public `target` parameter; the wrapper maps
   it to the upstream REST `to` field internally
+- For single-document ingests, use the returned `root_uri` for follow-up
+  `ov_content_*` and scoped `ov_search_find` calls
 
 ## Architecture
 
@@ -111,7 +113,8 @@ Recommended verification path:
 4. `ov_resources_temp_upload` then `ov_resources_create`
 5. `ov_fs_ls` or `nordic_list_items`, depending on whether you ingested files or
    collection items
-6. `ov_content_overview` only after ingest or reindex has completed
+6. `ov_content_overview` only after ingest or reindex has completed, using the
+   returned `root_uri` for single-document resources
 
 ## Guardrails
 

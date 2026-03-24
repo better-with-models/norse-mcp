@@ -61,6 +61,8 @@ The native OpenViking resource scope is `viking://resources/...`.
 
 `ov_resources_create` still accepts `target` at the MCP layer. The wrapper
 translates that to OpenViking's upstream `to` field before calling the REST API.
+For single-document ingests, use the returned `root_uri` for follow-up
+`ov_content_*` and scoped `ov_search_find` calls.
 
 ## Codex
 

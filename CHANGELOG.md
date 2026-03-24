@@ -33,6 +33,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `to` field, restoring direct-target ingest behavior.
 - Moved LM Studio score sanitization earlier in the runtime path so invalid
   vector scores are filtered before they reach retriever candidate assembly.
+- Updated the usage docs to prefer `target_uri` for `ov_search_find` and to use
+  the returned `root_uri` for follow-up summary reads on single-document
+  resources.
 
 ## [0.1.1] — 2026-03-23
 

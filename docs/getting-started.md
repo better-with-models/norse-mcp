@@ -110,14 +110,16 @@ Using the MCP tools:
 Prefer `viking://resources/...` URIs in new workflows. The wrapper still accepts
 `ov:///...` as a compatibility alias if you see it in older examples. The MCP
 tool keeps the public `target` argument and translates it to OpenViking's
-upstream `to` field internally.
+upstream `to` field internally. For single-document ingests, use the returned
+`root_uri` from `ov_resources_create` for follow-up summary and scoped search
+calls.
 
 ## Step 6: Search
 
 ```json
 { "tool": "ov_search_find", "args": {
   "query": "your search query",
-  "target_uri": "viking://resources/my-docs",
+  "target_uri": "viking://resources/my-docs/intro-001.md",
   "limit": 5
 }}
 ```
@@ -129,17 +131,17 @@ upstream `to` field internally.
 
 { "tool": "ov_system_status_get", "args": {} }
 
-{ "tool": "ov_content_overview", "args": { "uri": "viking://resources/my-docs" } }
+{ "tool": "ov_content_overview", "args": { "uri": "viking://resources/my-docs/intro-001.md" } }
 
-{ "tool": "ov_content_abstract", "args": { "uri": "viking://resources/my-docs" } }
+{ "tool": "ov_content_abstract", "args": { "uri": "viking://resources/my-docs/intro-001.md" } }
 ```
 
 Confirm the resource list matches what you ingested and the system remains
 healthy. `ov_content_overview` and `ov_content_abstract` read the generated
-summary artifacts for the directory, so ingest or reindex must complete before
-you call them. With LM Studio or another OpenAI-compatible local endpoint, the
-server now filters invalid vector scores defensively before they reach the
-search response.
+summary artifacts for the returned resource root, so ingest or reindex must
+complete before you call them. With LM Studio or another OpenAI-compatible
+local endpoint, the server now filters invalid vector scores defensively before
+they reach the search response.
 
 ## Stopping the stack
 

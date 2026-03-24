@@ -462,6 +462,63 @@ def _patch_semantic_processor() -> None:
     sp_mod.SemanticProcessor._nordic_mcp_patched = True
 
 
+def _patch_semantic_dag() -> None:
+    from openviking.storage.queuefs import semantic_dag as dag_mod
+
+    if getattr(dag_mod.SemanticDagExecutor, "_nordic_mcp_target_sync_patched", False):
+        return
+
+    def patched_create_on_complete_callback(self):
+        async def noop_callback() -> None:
+            return
+
+        if not self._target_uri or not self._root_uri:
+            return noop_callback
+
+        if self._target_uri == self._root_uri:
+            return noop_callback
+
+        async def sync_target_callback() -> None:
+            try:
+                logger.info(
+                    "[nordic-mcp patch] Syncing semantic artifacts to target "
+                    "root_uri=%s target_uri=%s incremental=%s",
+                    self._root_uri,
+                    self._target_uri,
+                    self._incremental_update,
+                )
+                diff = await self._processor._sync_topdown_recursive(
+                    self._root_uri,
+                    self._target_uri,
+                    ctx=self._ctx,
+                    file_change_status=self._file_change_status,
+                )
+                logger.info(
+                    "[nordic-mcp patch] Semantic target sync complete: "
+                    "added_files=%s deleted_files=%s updated_files=%s "
+                    "added_dirs=%s deleted_dirs=%s",
+                    len(diff.added_files),
+                    len(diff.deleted_files),
+                    len(diff.updated_files),
+                    len(diff.added_dirs),
+                    len(diff.deleted_dirs),
+                )
+            except Exception as exc:
+                logger.error(
+                    "[nordic-mcp patch] Semantic target sync failed "
+                    "root_uri=%s target_uri=%s error=%s",
+                    self._root_uri,
+                    self._target_uri,
+                    exc,
+                    exc_info=True,
+                )
+
+        return sync_target_callback
+
+    dag_mod.SemanticDagExecutor._create_on_complete_callback = patched_create_on_complete_callback
+    dag_mod.SemanticDagExecutor._nordic_mcp_target_sync_patched = True
+
+
 def _patch_viking_fs() -> None:
     from openviking.storage import viking_fs as vfs_mod
 
@@ -516,6 +573,7 @@ def _patch_viking_fs() -> None:
 def _apply_patch_overlay() -> None:
     _patch_vectordb_adapter()
     _patch_hierarchical_retriever()
+    _patch_semantic_dag()
     _patch_semantic_processor()
     _patch_viking_fs()
     logger.info("[nordic-mcp patch] OpenViking runtime patch overlay active")

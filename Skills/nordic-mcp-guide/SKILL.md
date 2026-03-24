@@ -182,8 +182,8 @@ After completing a search workflow, deliver:
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `ov_search_search` | `collection_path`, `query`, `top_k` | Semantic vector search |
-| `ov_search_find` | `collection_path`, `query`, `filter` | Keyword/filter search |
+| `ov_search_search` | `query`, `session_id`, `limit` | Context-aware semantic search |
+| `ov_search_find` | `query`, `target_uri`, `limit`, `score_threshold` | Semantic search, optionally scoped to a subtree |
 | `ov_search_grep` | `collection_path`, `pattern` | Text grep across items |
 | `ov_search_glob` | `collection_path`, `pattern` | Glob pattern match on paths |
 
@@ -267,6 +267,9 @@ collection-based items API.
   — they return generated summary artifacts and do not synthesize on demand.
 - **Keep using `target` with `ov_resources_create`**
   — the MCP wrapper translates it to the upstream REST field for you.
+- **Use the returned `root_uri` after `ov_resources_create`**
+  — for single-document ingests, that is the URI to pass to `ov_content_*` and
+  scoped `ov_search_find`.
 - **Do not change `OPENVIKING_EMBED_MODEL` after data is stored** without
   recreating affected collections — dimension mismatch breaks search silently.
 - **Do not commit `container/.env`** — API keys must stay out of version control.

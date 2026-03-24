@@ -27,15 +27,17 @@ Representative tool call sequences for common tasks.
   "target": "viking://resources/documents/report-2026-q1",
   "wait": true
 }}
+
+// Follow-up reads should use the returned root_uri from ov_resources_create
+{ "tool": "ov_content_overview", "args": { "uri": "viking://resources/documents/report-2026-q1" } }
 ```
 
 ## Example 3: Search with filter
 
 ```json
 { "tool": "ov_search_search", "args": {
-  "collection_path": "/documents",
   "query": "revenue growth",
-  "top_k": 5
+  "limit": 5
 }}
 ```
 
