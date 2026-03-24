@@ -57,5 +57,18 @@ then poll `ov_tasks_get` for async completion.
 
 1. Confirm the correct collection name.
 2. Try `ov_search_find` for keyword/filter precision instead of semantic search.
-3. Check item count with `ov_fs_stat` — empty collection returns no results.
-4. Try `ov_search_search` with a broader `collection_path` if content spans collections.
+3. Check for entries with `ov_fs_ls` — empty collection returns no results.
+4. Use `ov_search_find` with `target_uri` to scope to a specific collection.
+
+## P8: Deleting a non-empty collection fails
+
+**Symptom:** `ov_fs_delete` on a collection directory returns HTTP 500
+"directory not empty".
+
+**Root cause:** The filesystem API does not support recursive deletion.
+Every child resource must be deleted before the parent directory can be removed.
+
+**Fix:** List children with `ov_fs_ls`, delete each child with `ov_fs_delete`,
+then delete the parent. For large collections this may require many delete calls.
+Alternatively, confirm with the user before any deletion and work from leaf nodes
+upward.

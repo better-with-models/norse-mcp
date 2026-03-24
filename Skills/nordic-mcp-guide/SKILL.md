@@ -32,24 +32,28 @@ Related docs:
 
 1. Confirm the stack is healthy: `ov_health_get` → `{"status":"ok"}`
 2. Create or confirm a collection: `ov_fs_mkdir` with `uri: "viking://resources/my-collection"`
-3. Store content: `ov_resources_create` with `wait:true` (long text/files) or `nordic_upsert_item` (pre-chunked items)
-4. Search: `ov_search_search` with a natural-language `query`
-5. Retrieve a full item: `nordic_fetch_item` with the `id` from search results
+   (add `account_id` and `user_id` when using the root API key)
+3. Upload content into container temp space: `ov_resources_temp_upload` → returns `temp_path`
+4. Ingest from temp: `ov_resources_create` with the returned `temp_path` and `wait:true`
+   (`path` must be a container-internal path — always obtain it from `temp_upload` first)
+5. Search: `ov_search_find` with `target_uri` for scoped search,
+   or `ov_search_search` for global context-aware search
+6. Read content: `ov_content_read` with the `uri` from search results
 
 ## Input Contract
 
 Before calling any write tools, confirm:
 
+- **When using the root API key, pass `account_id` and `user_id` on every data-plane call**
+  — omitting them returns `400 INVALID_ARGUMENT`
 - Stack is running and healthy (`ov_health_get` returns `{"status":"ok"}`)
 - Collection directory exists (`ov_fs_mkdir` is idempotent — safe to call on existing paths)
-- `id` values are unique within the collection
-- `text` content is UTF-8 string (not binary)
+- Content path for `ov_resources_create` is a container-internal path from `ov_resources_temp_upload`
 - API key available (MCP server handles auth internally; confirm `.env` is set)
-- When using the root API key, pass `account_id` and `user_id` params on data-plane calls
 
 Before calling search tools, confirm:
 
-- Collection exists and has items (`ov_fs_stat` shows `item_count > 0`)
+- Collection exists and has entries (`ov_fs_ls` returns ≥1 result)
 - Query is a natural-language phrase, not a keyword list
 
 ## Workflow
@@ -59,9 +63,10 @@ Before calling search tools, confirm:
 ```text
 1. ov_health_get                → verify stack is up
 2. ov_fs_mkdir                  → idempotent — OK to call on existing collection
-3. ov_resources_create          → for documents/files (set wait:true for sync)
-   OR nordic_upsert_item        → for pre-chunked or short items
-4. ov_fs_stat                   → verify item count increased
+                                  (pass account_id, user_id with root key)
+3. ov_resources_temp_upload     → upload content into container temp space
+4. ov_resources_create          → ingest from temp_path into collection (wait:true)
+5. ov_fs_ls                     → verify at least one entry exists in collection
 ```
 
 ### Search pattern
@@ -80,8 +85,8 @@ For bulk ingestion (> 100 items or large documents):
 ```text
 1. ov_pack_import               → upload items in batch (triggers async task)
 2. ov_tasks_get                 → poll until status = "completed"
-3. ov_fs_stat                   → verify item count
-4. ov_search_search             → spot-check results
+3. ov_fs_ls                     → verify entries exist in collection
+4. ov_search_find               → spot-check results with target_uri scoping
 ```
 
 ## Architecture
@@ -104,14 +109,14 @@ MCP server version: `2.0.0`
 
 After completing an ingest workflow, confirm:
 
-- Collection item count reflects all ingested content (`ov_fs_stat`)
-- At least one representative search returns relevant results (`ov_search_search`)
+- Collection has entries: `ov_fs_ls` returns ≥1 result
+- At least one representative search returns relevant results (`ov_search_find` or `ov_search_search`)
 - No failed async tasks (`ov_tasks_list` with `status: "failed"` returns empty)
 
 After completing a search workflow, deliver:
 
-- Ranked list of matching items with IDs and relevance scores
-- Full text of the top result(s) via `nordic_fetch_item`
+- Ranked list of matching items with URIs and relevance scores
+- Content of top result(s) via `ov_content_read` with the returned URI
 - Related items via `ov_relations_get` when graph context was requested
 
 ## MCP Tool Reference — 56 tools, 15 families
@@ -144,6 +149,11 @@ After completing a search workflow, deliver:
 | `ov_skills_create` | `name`, `content` | Create a reusable skill entry |
 
 ### 5. Items (4 tools)
+
+> **Note (v0.2.9):** `nordic_upsert_item` and the other Items tools call
+> `/api/v1/collections/` which is not present in the current deployment.
+> Use `ov_resources_temp_upload` + `ov_resources_create` for ingest instead.
+> These tools are retained for forward compatibility.
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
@@ -323,8 +333,8 @@ Key runtime facts:
 Before reporting a task complete:
 
 - [ ] `ov_health_get` returns `{"status":"ok"}`
-- [ ] Target collection shows correct `item_count` via `ov_fs_stat`
-- [ ] Representative search returns relevant results via `ov_search_search`
+- [ ] Target collection has entries: `ov_fs_ls` returns ≥1 result
+- [ ] Representative search returns relevant results via `ov_search_find` or `ov_search_search`
 - [ ] No failed async tasks: `ov_tasks_list` with `status: "failed"` is empty
 - [ ] No collection was deleted without explicit user confirmation
 

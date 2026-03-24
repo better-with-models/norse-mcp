@@ -13,43 +13,42 @@ Check the health of all nordic-mcp endpoints and report status.
 2. Check REST health endpoint:
 
    ```bash
-   curl -s http://127.0.0.1:1933/health | python3 -m json.tool 2>/dev/null \
+   curl -s http://127.0.0.1:1933/health \
      || echo "REST health endpoint unreachable"
    ```
 
 3. Check MCP endpoint handshake:
 
    ```bash
-   curl -s -X POST http://127.0.0.1:1933/mcp \
+   result=$(curl -s -X POST http://127.0.0.1:1933/mcp \
      -H "Content-Type: application/json" \
-     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"status-check","version":"0"}}}' \
-     | python3 -m json.tool 2>/dev/null \
+     -H "Accept: application/json, text/event-stream" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"status-check","version":"0"}}}')
+   echo "$result" | grep '^data:' | sed 's/^data: //' \
      || echo "MCP endpoint unreachable"
    ```
 
-4. Check system info (requires API key in Authorization header):
+4. Confirm health detail:
 
    ```bash
-   OPENVIKING_ROOT_API_KEY=$(grep OPENVIKING_ROOT_API_KEY \
-     "$(git rev-parse --show-toplevel)/container/.env" \
-     | cut -d= -f2)
-   curl -s http://127.0.0.1:1933/api/v1/system/info \
-     -H "Authorization: Bearer $OPENVIKING_ROOT_API_KEY" \
-     | python3 -m json.tool 2>/dev/null \
-     || echo "System info endpoint unreachable (check API key)"
+   curl -s http://127.0.0.1:1933/health || echo "Health endpoint unreachable"
    ```
 
 ## Healthy output example
 
 ```json
-{ "status": "ok" }
+{"status":"ok","healthy":true,"version":"v0.2.9","user_id":"default"}
 ```
 
 ```json
-{ "jsonrpc": "2.0", "id": 1, "result": { "protocolVersion": "2024-11-05", ... } }
+{"result":{"protocolVersion":"2024-11-05","capabilities":{"tools":{"listChanged":true}},"serverInfo":{"name":"nordic-mcp","version":"2.0.0"}},"jsonrpc":"2.0","id":1}
 ```
 
 ## If unhealthy
+
+> **Windows note:** `python3` may resolve to a Microsoft Store placeholder.
+> The commands above do not depend on `python3`. If you need JSON formatting,
+> use `python` instead of `python3`.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)/container"

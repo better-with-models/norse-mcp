@@ -18,6 +18,15 @@ tools:
   - mcp__nordic-mcp__nordic_list_items
   - mcp__nordic-mcp__ov_pack_import
   - mcp__nordic-mcp__ov_resources_create
+  - mcp__nordic-mcp__ov_resources_temp_upload
+  - mcp__nordic-mcp__ov_content_read
+  - mcp__nordic-mcp__ov_content_abstract
+  - mcp__nordic-mcp__ov_content_overview
+  - mcp__nordic-mcp__ov_sessions_get
+  - mcp__nordic-mcp__ov_sessions_list
+  - mcp__nordic-mcp__ov_sessions_add_message
+  - mcp__nordic-mcp__ov_sessions_commit
+  - mcp__nordic-mcp__ov_observer_system_get
   - mcp__nordic-mcp__ov_search_search
   - mcp__nordic-mcp__ov_search_find
   - mcp__nordic-mcp__ov_relations_link
@@ -66,7 +75,8 @@ Expected: `{"status":"ok"}`
 If the endpoint is unreachable or returns non-200:
 
 - Tell the user the stack is down
-- Direct them to run `/nordic-mcp-start` or `cd container && docker compose up -d`
+- Direct them to run `/nordic-mcp-start` or
+  `cd "$(git rev-parse --show-toplevel)/container" && docker compose up -d`
 - Do **not** attempt MCP tool calls against a down stack
 
 ## Intent classification
@@ -91,7 +101,7 @@ For ambiguous requests: ask **one** clarifying question, then route.
 1. **Lifecycle requests** go to slash commands, not MCP tools.
 2. **All data operations** load `nordic-mcp-guide` and follow its workflow patterns.
 3. **Collection deletion** requires explicit user confirmation before proceeding —
-   always echo the collection name and item count before deleting.
+   always echo the collection name and list its contents with `ov_fs_ls` before deleting.
 
 ## Agent-design rule
 
@@ -116,5 +126,5 @@ When in doubt, load `nordic-mcp-guide` and follow the workflow documented there.
 | Connection refused on port 1933 | Stack is down | `/nordic-mcp-start` |
 | HTTP 401 Unauthorized | API key mismatch | `/nordic-mcp-config` → check `OPENVIKING_ROOT_API_KEY` |
 | Task still pending after 60 s | Large async ingest | Keep polling `ov_tasks_get`; report ETA if available |
-| Empty search results | Collection empty or wrong name | `ov_fs_stat` → verify `item_count > 0` |
+| Empty search results | Collection empty or wrong name | `ov_fs_ls` → verify ≥1 entry exists |
 | Dimension mismatch error | Embedding model changed post-ingest | Delete and recreate collection |

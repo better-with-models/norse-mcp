@@ -66,11 +66,15 @@ Confirm no placeholder values remain.
 
 ### 7. Run the preflight check
 
-> **Prerequisite:** Python 3 must be installed (`python3 --version`).
-> On Windows install it with `winget install Python.Python.3.11` or from https://python.org.
+> **Prerequisite:** Python 3 must be installed. Verify with `python3 --version`
+> or `python --version`. On Windows the `python3` command may be a Microsoft
+> Store placeholder — install the real interpreter with
+> `winget install Python.Python.3.11` or from https://python.org, then reopen
+> your terminal.
 
 ```bash
-python3 "$(git rev-parse --show-toplevel)/scripts/preflight.py"
+python3 "$(git rev-parse --show-toplevel)/scripts/preflight.py" \
+  || python "$(git rev-parse --show-toplevel)/scripts/preflight.py"
 ```
 
 All checks should pass before running `/nordic-mcp-start`.
