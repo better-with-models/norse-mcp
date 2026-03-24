@@ -7,7 +7,7 @@ an already-running session.
 
 ## P2: Stack not running
 
-All `nordic_*` calls fail if the Docker stack is not healthy.
+All MCP calls fail if the Docker stack is not healthy.
 
 ## P3: Missing or wrong API key
 
@@ -21,6 +21,5 @@ match the running endpoint.
 
 ## P5: Search returns poor results
 
-Try `nordic_hybrid_search`, confirm the collection is not empty, and verify the
-embedding configuration has not changed after ingestion.
-
+Try `ov_search_search`, confirm the target resource subtree is not empty, and
+verify the embedding configuration has not changed after ingestion.

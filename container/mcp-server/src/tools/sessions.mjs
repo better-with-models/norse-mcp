@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAliases } from '../client.mjs';
 
 function text(v) {
   return { content: [{ type: 'text', text: JSON.stringify(v, null, 2) }] };
@@ -118,7 +118,7 @@ export function register(server, client, _config) {
     },
     async ({ id, contexts, skill, account_id, user_id }) => {
       const body = {
-        contexts,
+        contexts: normalizeUriAliases(contexts),
         ...(skill != null && { skill }),
       };
       const r = await client.fetch(

@@ -71,7 +71,7 @@ describe('search tools', () => {
       mockFetch(ok([]));
       await server.tools['ov_search_grep']({ uri: 'ov:///notes', pattern: 'theorem' });
       const body = JSON.parse(capturedCalls[0].opts.body);
-      assert.equal(body.uri, 'ov:///notes');
+      assert.equal(body.uri, 'viking://resources/notes');
       assert.equal(body.pattern, 'theorem');
     });
     it('includes case_insensitive when set', async () => {
@@ -92,7 +92,7 @@ describe('search tools', () => {
     it('includes uri when provided', async () => {
       mockFetch(ok([]));
       await server.tools['ov_search_glob']({ pattern: '*.md', uri: 'ov:///docs' });
-      assert.equal(JSON.parse(capturedCalls[0].opts.body).uri, 'ov:///docs');
+      assert.equal(JSON.parse(capturedCalls[0].opts.body).uri, 'viking://resources/docs');
     });
   });
 });

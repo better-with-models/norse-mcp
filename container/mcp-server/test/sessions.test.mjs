@@ -101,7 +101,10 @@ describe('sessions tools', () => {
       const call = capturedCalls[0];
       assert.equal(call.opts.method, 'POST');
       assert.ok(call.url.endsWith('/api/v1/sessions/sess-1/used'));
-      assert.deepEqual(JSON.parse(call.opts.body).contexts, ['ov:///a', 'ov:///b']);
+      assert.deepEqual(
+        JSON.parse(call.opts.body).contexts,
+        ['viking://resources/a', 'viking://resources/b']
+      );
     });
 
     it('includes skill when provided', async () => {

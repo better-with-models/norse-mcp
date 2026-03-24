@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAlias } from '../client.mjs';
 
 function text(v) {
   return { content: [{ type: 'text', text: JSON.stringify(v, null, 2) }] };
@@ -19,7 +19,7 @@ export function register(server, client, _config) {
     async ({ uri, to, account_id, user_id }) => {
       const r = await client.fetch(
         '/api/v1/pack/export',
-        { method: 'POST', body: JSON.stringify({ uri, to }) },
+        { method: 'POST', body: JSON.stringify({ uri: normalizeUriAlias(uri), to }) },
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);
@@ -41,7 +41,7 @@ export function register(server, client, _config) {
     async ({ file_path, parent, force, vectorize, account_id, user_id }) => {
       const body = {
         file_path,
-        parent,
+        parent: normalizeUriAlias(parent),
         ...(force     != null && { force }),
         ...(vectorize != null && { vectorize }),
       };

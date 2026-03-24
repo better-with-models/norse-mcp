@@ -40,6 +40,14 @@ curl http://127.0.0.1:1933/health
 
 Or use the slash command from within Claude: `/nordic-mcp-start`
 
+## URI note
+
+The native OpenViking resource scope is `viking://resources/...`.
+
+- Prefer `viking://resources/...` in new examples and automation
+- The older `ov:///...` form is still accepted by the MCP wrapper as a
+  compatibility alias and is translated into `viking://resources/...`
+
 ## Codex
 
 Codex installation is separate from Claude plugin installation:

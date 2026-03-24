@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAlias } from '../client.mjs';
 
 function text(v) {
   const str = typeof v === 'string' ? v : JSON.stringify(v, null, 2);
@@ -22,7 +22,7 @@ export function register(server, client, _config) {
     },
     async ({ uri, account_id, user_id }) => {
       const r = await client.fetch(
-        `/api/v1/content/read?uri=${encodeURIComponent(uri)}`, {},
+        `/api/v1/content/read?uri=${encodeURIComponent(normalizeUriAlias(uri))}`, {},
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);
@@ -40,7 +40,7 @@ export function register(server, client, _config) {
     },
     async ({ uri, account_id, user_id }) => {
       const r = await client.fetch(
-        `/api/v1/content/abstract?uri=${encodeURIComponent(uri)}`, {},
+        `/api/v1/content/abstract?uri=${encodeURIComponent(normalizeUriAlias(uri))}`, {},
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);
@@ -58,7 +58,7 @@ export function register(server, client, _config) {
     },
     async ({ uri, account_id, user_id }) => {
       const r = await client.fetch(
-        `/api/v1/content/overview?uri=${encodeURIComponent(uri)}`, {},
+        `/api/v1/content/overview?uri=${encodeURIComponent(normalizeUriAlias(uri))}`, {},
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);

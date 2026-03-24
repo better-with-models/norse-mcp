@@ -80,33 +80,44 @@ Detailed instructions: [codex-install.md](codex-install.md)
 Using the MCP tools:
 
 ```json
-{ "tool": "nordic_create_collection", "args": { "name": "my-docs" } }
+{ "tool": "ov_fs_mkdir", "args": { "uri": "viking://resources/my-docs" } }
 
-{ "tool": "nordic_chunk_and_store", "args": {
-  "collection": "my-docs",
-  "doc_id": "intro-001",
-  "text": "Your document content goes here...",
-  "chunk_size": 512
+{ "tool": "ov_resources_temp_upload", "args": {
+  "content": "Your document content goes here...",
+  "filename": "intro-001.md",
+  "mime_type": "text/markdown"
+}}
+
+{ "tool": "ov_resources_create", "args": {
+  "path": "/tmp/from-previous-step.md",
+  "target": "viking://resources/my-docs/intro-001.md",
+  "wait": true
 }}
 ```
+
+Prefer `viking://resources/...` URIs in new workflows. The wrapper still accepts
+`ov:///...` as a compatibility alias if you see it in older examples.
 
 ## Step 6: Search
 
 ```json
-{ "tool": "nordic_search", "args": {
-  "collection": "my-docs",
+{ "tool": "ov_search_find", "args": {
   "query": "your search query",
-  "top_k": 5
+  "target_uri": "viking://resources/my-docs",
+  "limit": 5
 }}
 ```
 
 ## Step 7: Verify
 
 ```json
-{ "tool": "nordic_get_collection", "args": { "collection": "my-docs" } }
+{ "tool": "ov_fs_ls", "args": { "uri": "viking://resources/my-docs", "simple": true } }
+
+{ "tool": "ov_system_status_get", "args": {} }
 ```
 
-Confirm the item count matches what you ingested.
+Confirm the resource list matches what you ingested and the system remains
+healthy.
 
 ## Stopping the stack
 

@@ -86,8 +86,10 @@ After the skill is installed and Codex is restarted:
 
 1. Confirm the skill is available
 2. Confirm the `nordic-mcp` MCP server is connected
-3. Run `nordic_health_check`
-4. Run one additional tool like `nordic_system_info`
+3. Run `ov_health_get`
+4. Run one additional tool like `ov_system_status_get`
+5. Prefer `viking://resources/...` URIs in new workflows. The wrapper still
+   accepts `ov:///...` as a compatibility alias.
 
 ## Notes
 
@@ -96,4 +98,3 @@ After the skill is installed and Codex is restarted:
   getting-started flow
 - Codex skill install and Codex MCP setup are both required for the full
   Codex experience
-

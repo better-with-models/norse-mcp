@@ -18,7 +18,7 @@ Load this skill when the user wants to:
 - Perform bulk ingestion → [Workflow: Pack ingest](#pack-ingest-pattern)
 - Start, stop, or configure the stack → [docs/getting-started.md](../../docs/getting-started.md)
 - Debug connection or auth failures → [references/pitfalls.md](references/pitfalls.md)
-- Understand all available tools → [MCP tool reference](#mcp-tool-reference--40-tools-13-families)
+- Understand all available tools → [MCP tool reference](#mcp-tool-reference--56-tools-15-families)
 
 Related docs:
 
@@ -30,25 +30,26 @@ Related docs:
 
 ## Quick Start
 
-1. Confirm the stack is healthy: `nordic_health_check` → `{"status":"ok"}`
-2. Create or confirm a collection: `nordic_create_collection` with a unique `name`
-3. Store content: `nordic_chunk_and_store` (long text) or `nordic_upsert_item` (pre-chunked)
-4. Search: `nordic_search` with a natural-language `query`
+1. Confirm the stack is healthy: `ov_health_get` → `{"status":"ok"}`
+2. Create or confirm a collection: `ov_fs_mkdir` with `uri: "viking://resources/my-collection"`
+3. Store content: `ov_resources_create` with `wait:true` (long text/files) or `nordic_upsert_item` (pre-chunked items)
+4. Search: `ov_search_search` with a natural-language `query`
 5. Retrieve a full item: `nordic_fetch_item` with the `id` from search results
 
 ## Input Contract
 
 Before calling any write tools, confirm:
 
-- Stack is running and healthy (`nordic_health_check` returns `{"status":"ok"}`)
-- `collection` name is a stable slug — collections persist across restarts
+- Stack is running and healthy (`ov_health_get` returns `{"status":"ok"}`)
+- Collection directory exists (`ov_fs_mkdir` is idempotent — safe to call on existing paths)
 - `id` values are unique within the collection
 - `text` content is UTF-8 string (not binary)
 - API key available (MCP server handles auth internally; confirm `.env` is set)
+- When using the root API key, pass `account_id` and `user_id` params on data-plane calls
 
 Before calling search tools, confirm:
 
-- Collection exists and has items (`nordic_get_collection` shows `item_count > 0`)
+- Collection exists and has items (`ov_fs_stat` shows `item_count > 0`)
 - Query is a natural-language phrase, not a keyword list
 
 ## Workflow
@@ -56,21 +57,20 @@ Before calling search tools, confirm:
 ### Ingest pattern
 
 ```text
-1. nordic_health_check          → verify stack is up
-2. nordic_create_collection     → idempotent — OK to call on existing collection
-3. nordic_chunk_and_store       → for documents > 512 tokens
+1. ov_health_get                → verify stack is up
+2. ov_fs_mkdir                  → idempotent — OK to call on existing collection
+3. ov_resources_create          → for documents/files (set wait:true for sync)
    OR nordic_upsert_item        → for pre-chunked or short items
-4. nordic_get_collection        → verify item count increased
+4. ov_fs_stat                   → verify item count increased
 ```
 
 ### Search pattern
 
 ```text
-1. nordic_search                → semantic vector search (default choice)
-   OR nordic_hybrid_search      → when keyword precision matters (alpha < 0.7)
-   OR nordic_multi_collection_search → when content spans collections
+1. ov_search_search             → semantic vector search (default choice)
+   OR ov_search_find            → when keyword/filter precision matters
 2. nordic_fetch_item            → retrieve full content for top result(s)
-3. nordic_get_relations         → optional: follow graph edges to related items
+3. ov_relations_get             → optional: follow graph edges to related items
 ```
 
 ### Pack ingest pattern
@@ -78,11 +78,10 @@ Before calling search tools, confirm:
 For bulk ingestion (> 100 items or large documents):
 
 ```text
-1. nordic_create_pack           → create named bundle
-2. nordic_ingest_pack           → upload items in batches (triggers async task)
-3. nordic_get_task              → poll until status = "completed"
-4. nordic_get_pack              → verify item count
-5. nordic_search                → spot-check results
+1. ov_pack_import               → upload items in batch (triggers async task)
+2. ov_tasks_get                 → poll until status = "completed"
+3. ov_fs_stat                   → verify item count
+4. ov_search_search             → spot-check results
 ```
 
 ## Architecture
@@ -105,149 +104,172 @@ MCP server version: `2.0.0`
 
 After completing an ingest workflow, confirm:
 
-- Collection item count reflects all ingested content
-- At least one representative search returns relevant results
-- No failed async tasks (`nordic_list_tasks` with `status: "failed"` returns empty)
+- Collection item count reflects all ingested content (`ov_fs_stat`)
+- At least one representative search returns relevant results (`ov_search_search`)
+- No failed async tasks (`ov_tasks_list` with `status: "failed"` returns empty)
 
 After completing a search workflow, deliver:
 
 - Ranked list of matching items with IDs and relevance scores
 - Full text of the top result(s) via `nordic_fetch_item`
-- Related items via `nordic_get_relations` when graph context was requested
+- Related items via `ov_relations_get` when graph context was requested
 
-## MCP Tool Reference — 40 tools, 13 families
+## MCP Tool Reference — 56 tools, 15 families
 
-### 1. Health (1 tool)
+### 1. Health (2 tools)
 
 | Tool | Description |
 |------|-------------|
-| `nordic_health_check` | Verify server is reachable and healthy |
+| `ov_health_get` | Verify server is reachable and healthy |
+| `ov_ready_get` | Readiness probe — checks all subsystems |
 
 ### 2. System (2 tools)
 
 | Tool | Description |
 |------|-------------|
-| `nordic_system_info` | Version and capabilities |
-| `nordic_system_stats` | Collection count, total vectors, memory usage |
+| `ov_system_status_get` | Version, capabilities, initialized state |
+| `ov_system_wait` | Block until system is ready |
 
-### 3. Resources / Collections (4 tools)
-
-| Tool | Key params | Description |
-|------|-----------|-------------|
-| `nordic_list_collections` | — | List all collections |
-| `nordic_create_collection` | `name`, `description` | Create named collection |
-| `nordic_get_collection` | `collection` | Metadata and stats |
-| `nordic_delete_collection` | `collection` | Delete permanently — irreversible |
-
-### 4. Items (4 tools)
+### 3. Resources (2 tools)
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `nordic_upsert_item` | `collection`, `items[]` | Insert or update items |
+| `ov_resources_temp_upload` | `content`, `filename` | Upload temp file for processing |
+| `ov_resources_create` | `path`, `target`, `wait`, `timeout` | Ingest file/URL into collection |
+
+### 4. Skills (1 tool)
+
+| Tool | Key params | Description |
+|------|-----------|-------------|
+| `ov_skills_create` | `name`, `content` | Create a reusable skill entry |
+
+### 5. Items (4 tools)
+
+| Tool | Key params | Description |
+|------|-----------|-------------|
+| `nordic_upsert_item` | `collection`, `items[]`, `account_id`, `user_id` | Insert or update items |
 | `nordic_fetch_item` | `collection`, `id` | Retrieve item by ID |
 | `nordic_delete_item` | `collection`, `id` | Delete item by ID |
 | `nordic_list_items` | `collection`, `limit`, `offset` | Paginated listing |
 
-### 5. Pack — bulk ingestion (5 tools)
+### 6. Pack — bulk ingestion (2 tools)
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `nordic_create_pack` | `collection`, `pack_id` | Create named bundle |
-| `nordic_ingest_pack` | `collection`, `pack_id`, `items[]` | Bulk-add (async) |
-| `nordic_get_pack` | `collection`, `pack_id` | Status and metadata |
-| `nordic_list_packs` | `collection` | List all packs in collection |
-| `nordic_delete_pack` | `collection`, `pack_id` | Delete pack and items |
+| `ov_pack_export` | `uri` | Export a pack bundle |
+| `ov_pack_import` | `path`, `target`, `wait` | Bulk-import pack (async) |
 
-### 6. Filesystem (3 tools)
+### 7. Filesystem (6 tools)
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `nordic_upload_file` | `collection`, `file_path`, `item_id` | Upload server-side file |
-| `nordic_list_files` | `collection` | List file-backed items |
-| `nordic_delete_file` | `collection`, `item_id` | Remove file-backed item |
+| `ov_fs_ls` | `uri` | List directory / collection contents |
+| `ov_fs_tree` | `uri` | Tree view of a collection |
+| `ov_fs_stat` | `uri` | Metadata and item count for a path |
+| `ov_fs_mkdir` | `uri` | Create collection directory (idempotent) |
+| `ov_fs_delete` | `uri` | Delete entry — irreversible |
+| `ov_fs_move` | `source`, `target` | Move or rename |
 
-### 7. Content (2 tools)
-
-| Tool | Key params | Description |
-|------|-----------|-------------|
-| `nordic_chunk_and_store` | `collection`, `text`, `doc_id`, `chunk_size` | Auto-chunk and embed |
-| `nordic_get_chunk` | `collection`, `chunk_id` | Retrieve chunk by ID |
-
-### 8. Search (3 tools)
+### 8. Content (3 tools)
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `nordic_search` | `collection`, `query`, `top_k`, `filter` | Semantic vector search |
-| `nordic_hybrid_search` | `collection`, `query`, `alpha` | Vector + keyword, 0=keyword, 1=vector |
-| `nordic_multi_collection_search` | `collections[]`, `query` | Cross-collection search |
+| `ov_content_read` | `uri` | Read stored content |
+| `ov_content_abstract` | `uri` | Generate abstract of content |
+| `ov_content_overview` | `uri` | Generate overview of a collection |
 
-### 9. Relations (3 tools)
-
-| Tool | Key params | Description |
-|------|-----------|-------------|
-| `nordic_add_relation` | `collection`, `source_id`, `target_id`, `relation_type` | Create typed edge |
-| `nordic_get_relations` | `collection`, `item_id`, `direction` | Get in/out/both edges |
-| `nordic_delete_relation` | `collection`, `relation_id` | Remove relation |
-
-### 10. Sessions (4 tools)
+### 9. Search (4 tools)
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `nordic_create_session` | `session_id` (optional) | Create interaction context |
-| `nordic_get_session` | `session_id` | State and history |
-| `nordic_list_sessions` | — | All active sessions |
-| `nordic_delete_session` | `session_id` | End and delete |
+| `ov_search_search` | `collection_path`, `query`, `top_k` | Semantic vector search |
+| `ov_search_find` | `collection_path`, `query`, `filter` | Keyword/filter search |
+| `ov_search_grep` | `collection_path`, `pattern` | Text grep across items |
+| `ov_search_glob` | `collection_path`, `pattern` | Glob pattern match on paths |
 
-### 11. Tasks (3 tools)
-
-| Tool | Key params | Description |
-|------|-----------|-------------|
-| `nordic_get_task` | `task_id` | Async task status and result |
-| `nordic_list_tasks` | `status`, `limit` | Recent tasks, filterable |
-| `nordic_cancel_task` | `task_id` | Cancel pending task |
-
-### 12. Observer (2 tools)
+### 10. Relations (3 tools)
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `nordic_get_metrics` | — | Request rates, latencies, error counts |
-| `nordic_get_events` | `limit`, `level` | Server event log |
+| `ov_relations_link` | `source`, `target`, `relation_type` | Create typed edge |
+| `ov_relations_get` | `uri`, `direction` | Get in/out/both edges |
+| `ov_relations_unlink` | `source`, `target` | Remove relation |
 
-### 13. Admin (4 tools)
+### 11. Sessions (7 tools)
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `nordic_create_api_key` | `name`, `collections[]`, `read_only` | Create scoped key |
-| `nordic_list_api_keys` | — | List keys (no values exposed) |
-| `nordic_revoke_api_key` | `key_id` | Revoke key |
-| `nordic_trigger_backup` | `label` | Point-in-time backup |
+| `ov_sessions_create` | `session_id` (optional) | Create interaction context |
+| `ov_sessions_get` | `session_id` | State and history |
+| `ov_sessions_list` | — | All active sessions |
+| `ov_sessions_delete` | `session_id` | End and delete |
+| `ov_sessions_add_message` | `session_id`, `message` | Append message to session |
+| `ov_sessions_mark_used` | `session_id` | Mark session as recently used |
+| `ov_sessions_commit` | `session_id`, `wait`, `timeout` | Commit session to storage |
 
-### Legacy aliases (5 tools)
+### 12. Tasks (2 tools)
 
-Provided for backward compatibility with prompts written against the original
-OpenViking API surface.
+| Tool | Key params | Description |
+|------|-----------|-------------|
+| `ov_tasks_get` | `task_id` | Async task status and result |
+| `ov_tasks_list` | `status`, `limit` | Recent tasks, filterable |
 
-| Alias | Maps to |
-|-------|---------|
-| `search_by_text` | `nordic_search` |
-| `upsert_data` | `nordic_upsert_item` |
-| `fetch_data` | `nordic_fetch_item` |
-| `list_collection` | `nordic_list_collections` |
-| `delete_data` | `nordic_delete_item` |
+### 13. Observer (4 tools)
+
+| Tool | Description |
+|------|-------------|
+| `ov_observer_system_get` | System-level metrics and status |
+| `ov_observer_queue_get` | Queue depth and processing stats |
+| `ov_observer_vikingdb_get` | VikingDB storage metrics |
+| `ov_observer_vlm_get` | Vision-language model metrics |
+
+### 14. Debug (1 tool)
+
+| Tool | Description |
+|------|-------------|
+| `ov_debug_health_get` | Extended health diagnostics |
+
+### 15. Admin (8 tools)
+
+| Tool | Key params | Description |
+|------|-----------|-------------|
+| `ov_admin_accounts_create` | `name` | Create tenant account |
+| `ov_admin_accounts_list` | — | List all accounts |
+| `ov_admin_accounts_delete` | `account_id` | Delete account |
+| `ov_admin_users_create` | `account_id`, `username` | Create user in account |
+| `ov_admin_users_list` | `account_id` | List users |
+| `ov_admin_users_delete` | `account_id`, `user_id` | Delete user |
+| `ov_admin_user_role_update` | `account_id`, `user_id`, `role` | Update user role |
+| `ov_admin_user_key_create` | `account_id`, `user_id` | Create scoped API key |
+
+### Legacy compat aliases (5 tools)
+
+Provided for backward compatibility. Note: signatures differ from the
+collection-based items API.
+
+| Alias | Key params | Notes |
+|-------|-----------|-------|
+| `search_by_text` | `query`, `top_k?`, `collection_path?` | Semantic search |
+| `upsert_data` | `content`, `filename`, `collection_path?` | Upload content as file |
+| `fetch_data` | `uri` | Fetch by `viking://resources/...` URI (`ov:///...` alias also accepted) |
+| `list_collection` | `uri?` | List collection at URI |
+| `delete_data` | `uri` | Delete by `viking://resources/...` URI (`ov:///...` alias also accepted) |
 
 ## Guardrails
 
-- **Never delete a collection without explicit user confirmation** — all stored
-  data is permanently lost.
-- **Check `nordic_health_check` before any write sequence** — partial ingestion
+- **Never delete a collection without explicit user confirmation** — `ov_fs_delete`
+  is irreversible and removes all stored data.
+- **Check `ov_health_get` before any write sequence** — partial ingestion
   is difficult to recover from.
-- **Poll `nordic_get_task` after `nordic_ingest_pack`** — large packs are async;
+- **Poll `ov_tasks_get` after `ov_pack_import`** — large packs are async;
   do not assume completion.
-- **Do not change `OPENVIKING_EMBEDDING_MODEL` after data is stored** without
+- **Do not change `OPENVIKING_EMBED_MODEL` after data is stored** without
   recreating affected collections — dimension mismatch breaks search silently.
 - **Do not commit `container/.env`** — API keys must stay out of version control.
 - **Do not assume item IDs are unique across collections** — IDs are scoped per
   collection.
+- **Pass `account_id` and `user_id` on data-plane calls** when using the root
+  API key — omitting them returns `400 INVALID_ARGUMENT`.
 
 ## Out of Scope
 
@@ -282,17 +304,17 @@ Key runtime facts:
 - When the user hits a **persistent error not covered by pitfalls.md**: escalate
   to the `nordic-mcp-orchestrator` agent with full error context.
 - When the user wants to **build a new collection schema**: begin with
-  `nordic_create_collection` → `nordic_chunk_and_store` → `nordic_search` to
+  `ov_fs_mkdir` → `ov_resources_create` → `ov_search_search` to
   validate relevance before bulk ingestion.
 
 ## Verification Checklist
 
 Before reporting a task complete:
 
-- [ ] `nordic_health_check` returns `{"status":"ok"}`
-- [ ] Target collection shows correct `item_count` via `nordic_get_collection`
-- [ ] Representative search returns relevant results via `nordic_search`
-- [ ] No failed async tasks: `nordic_list_tasks` with `status: "failed"` is empty
+- [ ] `ov_health_get` returns `{"status":"ok"}`
+- [ ] Target collection shows correct `item_count` via `ov_fs_stat`
+- [ ] Representative search returns relevant results via `ov_search_search`
+- [ ] No failed async tasks: `ov_tasks_list` with `status: "failed"` is empty
 - [ ] No collection was deleted without explicit user confirmation
 
 ## Example Prompts

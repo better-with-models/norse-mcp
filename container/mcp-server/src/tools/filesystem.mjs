@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAlias } from '../client.mjs';
 
 const tenantSchema = {
   account_id: z.string().optional().describe('Account ID (root-key tenant routing)'),
@@ -22,7 +22,7 @@ export function register(server, client, _config) {
       ...tenantSchema,
     },
     async ({ uri, simple, recursive, account_id, user_id }) => {
-      const params = new URLSearchParams({ uri });
+      const params = new URLSearchParams({ uri: normalizeUriAlias(uri) });
       if (simple    != null) params.set('simple',    String(simple));
       if (recursive != null) params.set('recursive', String(recursive));
       const r = await client.fetch(
@@ -39,7 +39,7 @@ export function register(server, client, _config) {
     { uri: z.string().describe('OpenViking directory URI'), ...tenantSchema },
     async ({ uri, account_id, user_id }) => {
       const r = await client.fetch(
-        `/api/v1/fs/tree?uri=${encodeURIComponent(uri)}`, {},
+        `/api/v1/fs/tree?uri=${encodeURIComponent(normalizeUriAlias(uri))}`, {},
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);
@@ -53,7 +53,7 @@ export function register(server, client, _config) {
     { uri: z.string().describe('OpenViking URI'), ...tenantSchema },
     async ({ uri, account_id, user_id }) => {
       const r = await client.fetch(
-        `/api/v1/fs/stat?uri=${encodeURIComponent(uri)}`, {},
+        `/api/v1/fs/stat?uri=${encodeURIComponent(normalizeUriAlias(uri))}`, {},
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);
@@ -68,7 +68,7 @@ export function register(server, client, _config) {
     async ({ uri, account_id, user_id }) => {
       const r = await client.fetch(
         '/api/v1/fs/mkdir',
-        { method: 'POST', body: JSON.stringify({ uri }) },
+        { method: 'POST', body: JSON.stringify({ uri: normalizeUriAlias(uri) }) },
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);
@@ -85,7 +85,7 @@ export function register(server, client, _config) {
       ...tenantSchema,
     },
     async ({ uri, recursive, account_id, user_id }) => {
-      const params = new URLSearchParams({ uri });
+      const params = new URLSearchParams({ uri: normalizeUriAlias(uri) });
       if (recursive != null) params.set('recursive', String(recursive));
       const r = await client.fetch(
         `/api/v1/fs?${params}`,
@@ -108,7 +108,13 @@ export function register(server, client, _config) {
     async ({ from_uri, to_uri, account_id, user_id }) => {
       const r = await client.fetch(
         '/api/v1/fs/mv',
-        { method: 'POST', body: JSON.stringify({ from_uri, to_uri }) },
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            from_uri: normalizeUriAlias(from_uri),
+            to_uri: normalizeUriAlias(to_uri),
+          }),
+        },
         buildTenantHeaders({ account_id, user_id })
       );
       return text(r);

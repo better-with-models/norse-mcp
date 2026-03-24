@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAlias, normalizeUriAliases } from '../client.mjs';
 
 function text(v) {
   return { content: [{ type: 'text', text: JSON.stringify(v, null, 2) }] };
@@ -16,7 +16,7 @@ export function register(server, client, _config) {
       user_id:    z.string().optional(),
     },
     async ({ uri, account_id, user_id }) => {
-      const params = new URLSearchParams({ uri });
+      const params = new URLSearchParams({ uri: normalizeUriAlias(uri) });
       const r = await client.fetch(
         `/api/v1/relations?${params}`, {},
         buildTenantHeaders({ account_id, user_id })
@@ -38,8 +38,8 @@ export function register(server, client, _config) {
     },
     async ({ from_uri, to_uris, reason, account_id, user_id }) => {
       const body = {
-        from_uri,
-        to_uris,
+        from_uri: normalizeUriAlias(from_uri),
+        to_uris: normalizeUriAliases(to_uris),
         ...(reason != null && { reason }),
       };
       const r = await client.fetch(
@@ -62,7 +62,10 @@ export function register(server, client, _config) {
       user_id:    z.string().optional(),
     },
     async ({ from_uri, to_uris, account_id, user_id }) => {
-      const body = { from_uri, to_uris };
+      const body = {
+        from_uri: normalizeUriAlias(from_uri),
+        to_uris: normalizeUriAliases(to_uris),
+      };
       const r = await client.fetch(
         '/api/v1/relations/link',
         { method: 'DELETE', body: JSON.stringify(body) },

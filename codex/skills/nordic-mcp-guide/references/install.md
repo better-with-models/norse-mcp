@@ -82,8 +82,9 @@ After restarting Codex:
 
 1. Confirm the skill is available
 2. Confirm the `nordic-mcp` MCP server is connected
-3. Run `nordic_health_check`
-4. Run one read tool such as `nordic_system_info`
+3. Run `ov_health_get`
+4. Run one read tool such as `ov_system_status_get`
+5. Prefer `viking://resources/...` URIs in new workflows. The wrapper still
+   accepts `ov:///...` as a compatibility alias.
 
 If the server is not reachable, check [pitfalls.md](pitfalls.md).
-

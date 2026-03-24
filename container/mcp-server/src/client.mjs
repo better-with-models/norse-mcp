@@ -25,12 +25,25 @@ export class OvError extends Error {
   }
 }
 
+const OV_ALIAS_PREFIX = 'ov:///';
+const VIKING_RESOURCES_PREFIX = 'viking://resources';
+
 export function buildTenantHeaders({ account_id, user_id, agent_id } = {}) {
   const h = {};
   if (account_id != null) h['X-OpenViking-Account'] = String(account_id);
   if (user_id    != null) h['X-OpenViking-User']    = String(user_id);
   if (agent_id   != null) h['X-OpenViking-Agent']   = String(agent_id);
   return h;
+}
+
+export function normalizeUriAlias(uri) {
+  if (typeof uri !== 'string' || !uri.startsWith(OV_ALIAS_PREFIX)) return uri;
+  const suffix = uri.slice(OV_ALIAS_PREFIX.length).replace(/^\/+/, '');
+  return suffix ? `${VIKING_RESOURCES_PREFIX}/${suffix}` : VIKING_RESOURCES_PREFIX;
+}
+
+export function normalizeUriAliases(uris = []) {
+  return uris.map((uri) => normalizeUriAlias(uri));
 }
 
 export function createClient(config) {

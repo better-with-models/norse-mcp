@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mockFetch, capturedCalls, resetMock } from './helpers/mock-fetch.mjs';
-import { createClient, OvError, buildTenantHeaders } from '../src/client.mjs';
+import { createClient, OvError, buildTenantHeaders, normalizeUriAlias, normalizeUriAliases } from '../src/client.mjs';
 
 const cfg = { ovBase: 'http://127.0.0.1:1934', ovKey: 'test-key', mcpPort: 4050, collPath: '/' };
 
@@ -19,6 +19,27 @@ describe('buildTenantHeaders', () => {
     assert.equal(h['X-OpenViking-Account'], 'a');
     assert.equal(h['X-OpenViking-User'], 'u');
     assert.equal(h['X-OpenViking-Agent'], 'g');
+  });
+});
+
+describe('normalizeUriAlias', () => {
+  it('maps the legacy ov:/// root alias to resources scope', () => {
+    assert.equal(normalizeUriAlias('ov:///'), 'viking://resources');
+  });
+
+  it('maps nested ov:/// paths into resources scope', () => {
+    assert.equal(normalizeUriAlias('ov:///docs/note.md'), 'viking://resources/docs/note.md');
+  });
+
+  it('leaves native viking URIs unchanged', () => {
+    assert.equal(normalizeUriAlias('viking://session/abc'), 'viking://session/abc');
+  });
+
+  it('normalizes URI arrays', () => {
+    assert.deepEqual(
+      normalizeUriAliases(['ov:///a', 'viking://resources/b']),
+      ['viking://resources/a', 'viking://resources/b']
+    );
   });
 });
 

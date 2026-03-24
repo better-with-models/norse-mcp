@@ -3,7 +3,7 @@
  * Each alias mirrors the behaviour of its new counterpart(s).
  */
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAlias } from '../client.mjs';
 
 function text(v) {
   const str = typeof v === 'string' ? v : JSON.stringify(v, null, 2);
@@ -60,7 +60,7 @@ export function register(server, client, config) {
         buildTenantHeaders({})
       );
       // Step 3: move to collection
-      const to_uri = `ov:///${dest.replace(/^\/+/, '')}/${filename}`;
+      const to_uri = normalizeUriAlias(`ov:///${dest.replace(/^\/+/, '')}/${filename}`);
       await client.fetch(
         '/api/v1/fs/mv',
         { method: 'POST', body: JSON.stringify({ from_uri: root_uri, to_uri }) },
@@ -78,12 +78,13 @@ export function register(server, client, config) {
       uri: z.string().describe('OpenViking URI e.g. ov:///path/to/file.md'),
     },
     async ({ uri }) => {
+      const normalizedUri = normalizeUriAlias(uri);
       const entries = await client.fetch(
-        `/api/v1/fs/ls?uri=${encodeURIComponent(uri)}`, {},
+        `/api/v1/fs/ls?uri=${encodeURIComponent(normalizedUri)}`, {},
         buildTenantHeaders({})
       );
       const list = Array.isArray(entries) ? entries : [];
-      const target = list.length === 1 && list[0] !== uri ? list[0] : uri;
+      const target = list.length === 1 && list[0] !== normalizedUri ? list[0] : normalizedUri;
       const r = await client.fetch(
         `/api/v1/content/read?uri=${encodeURIComponent(target)}`, {},
         buildTenantHeaders({})
@@ -100,7 +101,7 @@ export function register(server, client, config) {
       uri: z.string().optional().describe('OpenViking directory URI (default: collection root)'),
     },
     async ({ uri }) => {
-      const target = uri ?? `ov:///${config.collPath.replace(/^\/+/, '')}`;
+      const target = normalizeUriAlias(uri ?? `ov:///${config.collPath.replace(/^\/+/, '')}`);
       const r = await client.fetch(
         `/api/v1/fs/ls?uri=${encodeURIComponent(target)}`, {},
         buildTenantHeaders({})
@@ -118,7 +119,7 @@ export function register(server, client, config) {
     },
     async ({ uri }) => {
       const r = await client.fetch(
-        `/api/v1/fs?uri=${encodeURIComponent(uri)}`,
+        `/api/v1/fs?uri=${encodeURIComponent(normalizeUriAlias(uri))}`,
         { method: 'DELETE' },
         buildTenantHeaders({})
       );

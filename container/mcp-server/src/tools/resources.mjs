@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAlias } from '../client.mjs';
 
 function text(v) {
   return { content: [{ type: 'text', text: JSON.stringify(v, null, 2) }] };
@@ -52,7 +52,7 @@ export function register(server, client, _config) {
     async ({ path, target, reason, instruction, wait, timeout, watch_interval, account_id, user_id }) => {
       const body = {
         path,
-        ...(target         != null && { target }),
+        ...(target         != null && { target: normalizeUriAlias(target) }),
         ...(reason         != null && { reason }),
         ...(instruction    != null && { instruction }),
         ...(wait           != null && { wait }),

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { buildTenantHeaders } from '../client.mjs';
+import { buildTenantHeaders, normalizeUriAlias } from '../client.mjs';
 
 function text(v) {
   return { content: [{ type: 'text', text: JSON.stringify(v, null, 2) }] };
@@ -22,7 +22,7 @@ export function register(server, client, config) {
       const body = {
         query,
         collection_path: config.collPath,
-        ...(target_uri      != null && { target_uri }),
+        ...(target_uri      != null && { target_uri: normalizeUriAlias(target_uri) }),
         ...(limit           != null && { limit }),
         ...(score_threshold != null && { score_threshold }),
       };
@@ -74,7 +74,7 @@ export function register(server, client, config) {
     },
     async ({ uri, pattern, case_insensitive, account_id, user_id }) => {
       const body = {
-        uri,
+        uri: normalizeUriAlias(uri),
         pattern,
         ...(case_insensitive != null && { case_insensitive }),
       };
@@ -100,7 +100,7 @@ export function register(server, client, config) {
     async ({ pattern, uri, account_id, user_id }) => {
       const body = {
         pattern,
-        ...(uri != null && { uri }),
+        ...(uri != null && { uri: normalizeUriAlias(uri) }),
       };
       const r = await client.fetch(
         '/api/v1/search/glob',

@@ -19,6 +19,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Updated `README.md` and `docs/getting-started.md` to explain that Claude
   plugin installation and Codex installation use different client surfaces.
+- Normalized legacy `ov:///...` URIs to `viking://resources/...` inside the MCP
+  wrapper so compatibility aliases no longer hit invalid backend scopes.
+- Updated the Claude and Codex usage docs to prefer `viking://resources/...`
+  URIs and to reflect the live `ov_*` tool surface used by the server.
 
 ## [0.1.1] — 2026-03-23
 

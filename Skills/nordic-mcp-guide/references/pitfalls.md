@@ -18,7 +18,7 @@ set when the container was built/started. Restart after editing `.env`.
 **Symptom:** Search returns no results or errors about dimension mismatch.
 
 **Root cause:** Collections are built with a fixed embedding dimension. Changing
-`OPENVIKING_EMBEDDING_MODEL` or `OPENVIKING_EMBEDDING_DIM` after ingestion breaks
+`OPENVIKING_EMBED_MODEL` or `OPENVIKING_EMBED_DIMENSION` after ingestion breaks
 existing indexes.
 
 **Fix:** Delete and recreate affected collections after changing the model.
@@ -46,16 +46,16 @@ netstat -ano | findstr :1933  # Windows
 
 ## P6: Large documents causing timeout
 
-**Symptom:** `nordic_chunk_and_store` times out for very large files.
+**Symptom:** `ov_resources_create` times out for very large files.
 
-**Fix:** Use `nordic_create_pack` + `nordic_ingest_pack` for batch ingestion,
-then poll `nordic_get_task` for async completion.
+**Fix:** Use `ov_pack_import` for batch ingestion,
+then poll `ov_tasks_get` for async completion.
 
 ## P7: Search returns irrelevant results
 
 **Diagnosis steps:**
 
 1. Confirm the correct collection name.
-2. Try `nordic_hybrid_search` with lower `alpha` (more keyword weight).
-3. Check item count with `nordic_get_collection` — empty collection returns no results.
-4. Try `nordic_multi_collection_search` if content spans multiple collections.
+2. Try `ov_search_find` for keyword/filter precision instead of semantic search.
+3. Check item count with `ov_fs_stat` — empty collection returns no results.
+4. Try `ov_search_search` with a broader `collection_path` if content spans collections.

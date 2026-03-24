@@ -103,13 +103,13 @@ describe('compat aliases', () => {
       mockFetch(ok(['ov:///my-coll/a.md']));
       await server.tools['list_collection']({});
       assert.ok(capturedCalls[0].url.includes('/api/v1/fs/ls'));
-      assert.ok(capturedCalls[0].url.includes(encodeURIComponent('ov:///my-coll')));
+      assert.ok(capturedCalls[0].url.includes(encodeURIComponent('viking://resources/my-coll')));
     });
 
     it('uses provided uri', async () => {
       mockFetch(ok([]));
       await server.tools['list_collection']({ uri: 'ov:///custom' });
-      assert.ok(capturedCalls[0].url.includes(encodeURIComponent('ov:///custom')));
+      assert.ok(capturedCalls[0].url.includes(encodeURIComponent('viking://resources/custom')));
     });
   });
 
@@ -120,7 +120,7 @@ describe('compat aliases', () => {
       const call = capturedCalls[0];
       assert.equal(call.opts.method, 'DELETE');
       assert.ok(call.url.includes('/api/v1/fs'));
-      assert.ok(call.url.includes(encodeURIComponent('ov:///file.md')));
+      assert.ok(call.url.includes(encodeURIComponent('viking://resources/file.md')));
     });
   });
 });

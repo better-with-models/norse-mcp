@@ -31,7 +31,7 @@ describe('relations tools', () => {
       const call = capturedCalls[0];
       assert.ok(!call.opts.method || call.opts.method === 'GET' || call.opts.method === undefined);
       assert.ok(call.url.includes('/api/v1/relations'));
-      assert.ok(call.url.includes(encodeURIComponent('ov:///doc.md')));
+      assert.ok(call.url.includes(encodeURIComponent('viking://resources/doc.md')));
     });
 
     it('injects tenant headers when provided', async () => {
@@ -51,8 +51,8 @@ describe('relations tools', () => {
       assert.equal(call.opts.method, 'POST');
       assert.ok(call.url.endsWith('/api/v1/relations/link'));
       const body = JSON.parse(call.opts.body);
-      assert.equal(body.from_uri, 'ov:///a');
-      assert.deepEqual(body.to_uris, ['ov:///b', 'ov:///c']);
+      assert.equal(body.from_uri, 'viking://resources/a');
+      assert.deepEqual(body.to_uris, ['viking://resources/b', 'viking://resources/c']);
     });
 
     it('includes reason when provided', async () => {
@@ -80,8 +80,8 @@ describe('relations tools', () => {
       assert.equal(call.opts.method, 'DELETE');
       assert.ok(call.url.endsWith('/api/v1/relations/link'));
       const body = JSON.parse(call.opts.body);
-      assert.equal(body.from_uri, 'ov:///a');
-      assert.deepEqual(body.to_uris, ['ov:///b']);
+      assert.equal(body.from_uri, 'viking://resources/a');
+      assert.deepEqual(body.to_uris, ['viking://resources/b']);
     });
   });
 });

@@ -33,7 +33,7 @@ describe('filesystem tools', () => {
       mockFetch(ok(['ov:///a', 'ov:///b']));
       const r = await server.tools['ov_fs_ls']({ uri: 'ov:///' });
       assert.ok(capturedCalls[0].url.includes('/api/v1/fs/ls'));
-      assert.ok(capturedCalls[0].url.includes('uri=ov'));
+      assert.ok(capturedCalls[0].url.includes(encodeURIComponent('viking://resources')));
       assert.ok(r.content[0].text.includes('ov:///a'));
     });
     it('appends simple=true when set', async () => {
@@ -58,7 +58,7 @@ describe('filesystem tools', () => {
       mockFetch(ok([]));
       await server.tools['ov_fs_tree']({ uri: 'ov:///dir' });
       assert.ok(capturedCalls[0].url.includes('/api/v1/fs/tree'));
-      assert.ok(capturedCalls[0].url.includes(encodeURIComponent('ov:///dir')));
+      assert.ok(capturedCalls[0].url.includes(encodeURIComponent('viking://resources/dir')));
     });
   });
 
@@ -77,7 +77,7 @@ describe('filesystem tools', () => {
       const call = capturedCalls[0];
       assert.equal(call.opts.method, 'POST');
       assert.ok(call.url.endsWith('/api/v1/fs/mkdir'));
-      assert.ok(call.opts.body.includes('"uri"'));
+      assert.equal(JSON.parse(call.opts.body).uri, 'viking://resources/newdir');
     });
   });
 
@@ -105,8 +105,8 @@ describe('filesystem tools', () => {
       assert.equal(call.opts.method, 'POST');
       assert.ok(call.url.endsWith('/api/v1/fs/mv'));
       const body = JSON.parse(call.opts.body);
-      assert.equal(body.from_uri, 'ov:///a');
-      assert.equal(body.to_uri,   'ov:///b');
+      assert.equal(body.from_uri, 'viking://resources/a');
+      assert.equal(body.to_uri,   'viking://resources/b');
     });
   });
 });
