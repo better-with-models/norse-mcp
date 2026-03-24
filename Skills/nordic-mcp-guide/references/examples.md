@@ -71,7 +71,9 @@ Representative tool call sequences for common tasks.
 // Global semantic search
 { "tool": "ov_search_search", "args": {
   "query": "revenue growth",
-  "limit": 5
+  "limit": 5,
+  "account_id": "default",
+  "user_id": "default"
 }}
 
 // Scoped search within a collection

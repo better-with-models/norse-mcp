@@ -126,6 +126,7 @@ nordic-mcp/
 │   └── mcp-coverage-matrix.md   # 40 tools → REST endpoint map
 │
 └── scripts/
+    ├── preflight.ps1            # launcher that finds a working Python 3 runtime
     └── preflight.py             # docker + env sanity checks
 ```
 

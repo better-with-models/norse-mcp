@@ -34,6 +34,11 @@ Start the nordic-mcp Docker stack and verify all endpoints are healthy.
      echo "Waiting... ($i/15)"
      sleep 2
    done
+   if [ "$status" != "200" ]; then
+     echo "ERROR: nordic-mcp did not become healthy after 30s"
+     echo "Check logs: docker compose logs nordic-mcp --tail=50"
+     exit 1
+   fi
    ```
 
 5. Confirm MCP endpoint responds:

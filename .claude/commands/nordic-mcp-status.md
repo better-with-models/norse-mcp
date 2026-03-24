@@ -37,7 +37,7 @@ Check the health of all nordic-mcp endpoints and report status.
 ## Healthy output example
 
 ```json
-{"status":"ok","healthy":true,"version":"v0.2.9","user_id":"default"}
+{"status":"ok","healthy":true,"version":"v0.2.9"}
 ```
 
 ```json

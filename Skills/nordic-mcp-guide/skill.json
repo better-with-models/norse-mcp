@@ -2,9 +2,9 @@
   "id": "nordic-mcp-guide",
   "name": "nordic-mcp Guide",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "active",
   "category": "infrastructure",
-  "description": "Complete guide to using the nordic-mcp OpenViking MCP server: REST API patterns, MCP tool reference (40 tools, 13 families), session lifecycle, and guardrails.",
+  "description": "Complete guide to using the nordic-mcp OpenViking MCP server: REST API patterns, MCP tool reference (56 tools, 15 families), session lifecycle, and guardrails.",
   "intents": [
     "store content in the vector database",
     "search the vector database",
@@ -18,7 +18,7 @@
   "qa": {
     "lint": "pass",
     "test": "pass",
-    "test_drive": "pending",
+    "test_drive": "pass",
     "validation": "pending"
   }
 }

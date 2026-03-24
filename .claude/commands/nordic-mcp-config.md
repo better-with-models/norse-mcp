@@ -66,15 +66,26 @@ Confirm no placeholder values remain.
 
 ### 7. Run the preflight check
 
-> **Prerequisite:** Python 3 must be installed. Verify with `python3 --version`
-> or `python --version`. On Windows the `python3` command may be a Microsoft
-> Store placeholder — install the real interpreter with
-> `winget install Python.Python.3.11` or from https://python.org, then reopen
-> your terminal.
+> **Windows:** Use `npm run preflight` — it invokes `scripts/preflight.ps1`
+> which discovers Python via the `py` launcher and common install paths,
+> avoiding the Microsoft Store `python3` placeholder.
+>
+> **macOS/Linux:** Use `python3` or `python` directly.
+>
+> If you need to install Python: `winget install Python.Python.3.11` or
+> https://python.org, then reopen your terminal.
 
 ```bash
+# Windows (recommended)
+npm run preflight
+
+# macOS/Linux fallback
 python3 "$(git rev-parse --show-toplevel)/scripts/preflight.py" \
   || python "$(git rev-parse --show-toplevel)/scripts/preflight.py"
 ```
 
 All checks should pass before running `/nordic-mcp-start`.
+
+> **Note:** If the stack is already running, the port 1933 availability check
+> will report FAIL — this is expected. Ignore it when re-validating `.env`
+> changes on a live stack.

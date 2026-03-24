@@ -75,7 +75,7 @@ nginx routes:
 npm run lint
 
 # Docker preflight (checks daemon, .env, port availability)
-python scripts/preflight.py
+npm run preflight
 ```
 
 ## Editing rules

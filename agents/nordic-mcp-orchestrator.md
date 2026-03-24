@@ -8,6 +8,7 @@ tools:
   - mcp__nordic-mcp__ov_health_get
   - mcp__nordic-mcp__ov_ready_get
   - mcp__nordic-mcp__ov_system_status_get
+  - mcp__nordic-mcp__ov_system_wait
   - mcp__nordic-mcp__ov_fs_ls
   - mcp__nordic-mcp__ov_fs_mkdir
   - mcp__nordic-mcp__ov_fs_stat
@@ -76,7 +77,7 @@ If the endpoint is unreachable or returns non-200:
 
 - Tell the user the stack is down
 - Direct them to run `/nordic-mcp-start` or
-  `cd "$(git rev-parse --show-toplevel)/container" && docker compose up -d`
+  `cd "$(git rev-parse --show-toplevel)/container" && docker compose up -d --build`
 - Do **not** attempt MCP tool calls against a down stack
 
 ## Intent classification

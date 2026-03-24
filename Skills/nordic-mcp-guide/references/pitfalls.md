@@ -67,8 +67,25 @@ then poll `ov_tasks_get` for async completion.
 
 **Root cause:** The filesystem API does not support recursive deletion.
 Every child resource must be deleted before the parent directory can be removed.
+Additionally, every ingested subdirectory generates two hidden artifacts —
+`.abstract.md` and `.overview.md` — that are **not** returned by `ov_fs_ls`
+but still block directory deletion.
 
-**Fix:** List children with `ov_fs_ls`, delete each child with `ov_fs_delete`,
-then delete the parent. For large collections this may require many delete calls.
-Alternatively, confirm with the user before any deletion and work from leaf nodes
-upward.
+**Fix:**
+1. List visible children with `ov_fs_ls`; delete each with `ov_fs_delete`.
+2. For each subdirectory level, also delete the hidden artifacts via REST:
+   `DELETE /api/v1/fs?uri=<dir_uri>/.abstract.md` and `.../.overview.md`
+3. Work from leaf nodes upward. Use `ov_fs_tree` to get a full recursive view.
+4. Even after removing all known children, a directory-level index entry may
+   remain — retry deletion from deepest leaf to root.
+
+## P9: MCP session expires between calls
+
+**Symptom:** Tool calls return `{"error":"Session not found"}` after a pause
+in the conversation.
+
+**Root cause:** MCP sessions are short-lived and expire after inactivity.
+
+**Fix:** Re-initialize by calling `initialize` again (or re-connecting via
+`npx mcp-remote`). The session ID in `Mcp-Session-Id` response header changes
+on each new initialize — update any saved session ID.

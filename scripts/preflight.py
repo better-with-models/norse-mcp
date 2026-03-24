@@ -6,7 +6,7 @@ Verifies that the environment is ready to start the nordic-mcp Docker stack.
 Run this before /nordic-mcp-start or docker compose up.
 
 Usage:
-    python scripts/preflight.py
+    npm run preflight
 """
 
 import os

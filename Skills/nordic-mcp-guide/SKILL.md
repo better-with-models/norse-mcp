@@ -74,7 +74,7 @@ Before calling search tools, confirm:
 ```text
 1. ov_search_search             → semantic vector search (default choice)
    OR ov_search_find            → when keyword/filter precision matters
-2. nordic_fetch_item            → retrieve full content for top result(s)
+2. ov_content_read              → retrieve full content by URI from search results
 3. ov_relations_get             → optional: follow graph edges to related items
 ```
 
@@ -105,6 +105,10 @@ Claude (via MCP) ─→ npx mcp-remote http://127.0.0.1:1933/mcp
 OpenViking version: `v0.2.9`
 MCP server version: `2.0.0`
 
+> **LM Studio deployments:** The embedding defaults above apply when using OpenAI.
+> For LM Studio, check `OPENVIKING_EMBED_MODEL` and `OPENVIKING_EMBED_DIMENSION`
+> in `container/.env` — they will differ from the OpenAI defaults.
+
 ## Standard Deliverables
 
 After completing an ingest workflow, confirm:
@@ -132,7 +136,7 @@ After completing a search workflow, deliver:
 
 | Tool | Description |
 |------|-------------|
-| `ov_system_status_get` | Version, capabilities, initialized state |
+| `ov_system_status_get` | Initialized state and current user |
 | `ov_system_wait` | Block until system is ready |
 
 ### 3. Resources (2 tools)
@@ -166,8 +170,8 @@ After completing a search workflow, deliver:
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `ov_pack_export` | `uri` | Export a pack bundle |
-| `ov_pack_import` | `path`, `target`, `wait` | Bulk-import pack (async) |
+| `ov_pack_export` | `uri`, `to` | Export a pack bundle |
+| `ov_pack_import` | `file_path`, `parent`, `wait` | Bulk-import pack (async) |
 
 ### 7. Filesystem (6 tools)
 
@@ -178,7 +182,7 @@ After completing a search workflow, deliver:
 | `ov_fs_stat` | `uri` | Metadata and item count for a path |
 | `ov_fs_mkdir` | `uri` | Create collection directory (idempotent) |
 | `ov_fs_delete` | `uri` | Delete entry — irreversible |
-| `ov_fs_move` | `source`, `target` | Move or rename |
+| `ov_fs_move` | `from_uri`, `to_uri` | Move or rename |
 
 ### 8. Content (3 tools)
 
@@ -192,10 +196,10 @@ After completing a search workflow, deliver:
 
 | Tool | Key params | Description |
 |------|-----------|-------------|
-| `ov_search_search` | `query`, `session_id`, `limit` | Context-aware semantic search |
-| `ov_search_find` | `query`, `target_uri`, `limit`, `score_threshold` | Semantic search, optionally scoped to a subtree |
-| `ov_search_grep` | `collection_path`, `pattern` | Text grep across items |
-| `ov_search_glob` | `collection_path`, `pattern` | Glob pattern match on paths |
+| `ov_search_search` | `query`, `session_id`, `limit`, `account_id`, `user_id` | Context-aware semantic search |
+| `ov_search_find` | `query`, `target_uri`, `limit`, `score_threshold`, `account_id`, `user_id` | Semantic search, optionally scoped to a subtree |
+| `ov_search_grep` | `uri`, `pattern` | Text grep across items |
+| `ov_search_glob` | `uri`, `pattern` | Glob pattern match on paths |
 
 ### 10. Relations (3 tools)
 

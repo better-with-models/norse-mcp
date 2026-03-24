@@ -4,7 +4,8 @@
   "description": "Domain-agnostic OpenViking vector-database Claude plugin",
   "private": true,
   "scripts": {
-    "lint": "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
+    "lint": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "preflight": "pwsh -NoProfile -File scripts/preflight.ps1"
   },
   "devDependencies": {
     "markdownlint-cli2": "^0.17.0"

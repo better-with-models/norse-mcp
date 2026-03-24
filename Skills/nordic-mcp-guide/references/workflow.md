@@ -18,11 +18,12 @@ Standard execution patterns for common nordic-mcp operations.
 ## Pattern 2: Ingest a document
 
 ```text
-1. ov_fs_mkdir                  → create collection directory if new
+1. ov_health_get                → verify stack is up before any write
+2. ov_fs_mkdir                  → create collection directory if new
                                   (pass account_id, user_id with root key)
-2. ov_resources_temp_upload     → upload content to container temp space
-3. ov_resources_create          → ingest from temp_path into collection (wait:true)
-4. ov_fs_ls                     → verify at least one entry exists in collection
+3. ov_resources_temp_upload     → upload content to container temp space
+4. ov_resources_create          → ingest from temp_path into collection (wait:true)
+5. ov_fs_ls                     → verify at least one entry exists in collection
 ```
 
 ## Pattern 3: Search and retrieve
@@ -38,7 +39,7 @@ Standard execution patterns for common nordic-mcp operations.
 ## Pattern 4: Bulk ingest via pack
 
 ```text
-1. ov_pack_import               → upload items in batch (async)
+1. ov_pack_import               → upload items in batch (async); params: file_path, parent
 2. ov_tasks_get                 → poll async task status
 3. ov_fs_ls                     → verify entries exist in collection
 ```
