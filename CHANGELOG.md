@@ -23,6 +23,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   wrapper so compatibility aliases no longer hit invalid backend scopes.
 - Updated the Claude and Codex usage docs to prefer `viking://resources/...`
   URIs and to reflect the live `ov_*` tool surface used by the server.
+- Added a repo-owned OpenViking runtime patch overlay in the container image to
+  sanitize non-finite search scores and prevent blank overview/abstract
+  artifacts when using OpenAI-compatible local endpoints.
+- Updated the setup and skill docs to clarify that `ov_content_abstract` and
+  `ov_content_overview` read generated summary artifacts rather than generating
+  them on demand.
 
 ## [0.1.1] — 2026-03-23
 

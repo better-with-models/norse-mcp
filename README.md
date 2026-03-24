@@ -28,7 +28,8 @@ Domain-agnostic OpenViking vector-database Claude plugin and single-plugin marke
 ```bash
 # 1. Configure
 cp container/.env.example container/.env
-# edit container/.env — set OPENVIKING_ROOT_API_KEY and OPENAI_API_KEY
+# edit container/.env — set OPENVIKING_ROOT_API_KEY and either OPENAI_API_KEY
+# or an OpenAI-compatible local endpoint such as LM Studio
 
 # 2. Start
 cd container && docker compose up -d
@@ -47,6 +48,16 @@ The native OpenViking resource scope is `viking://resources/...`.
 - Prefer `viking://resources/...` in new examples and automation
 - The older `ov:///...` form is still accepted by the MCP wrapper as a
   compatibility alias and is translated into `viking://resources/...`
+
+## Summary artifacts
+
+`ov_content_abstract` and `ov_content_overview` read the generated
+`.abstract.md` and `.overview.md` summary artifacts for a directory.
+
+- They do not synthesize summaries on demand
+- Run ingest or content reindex first, then read the generated summaries
+- OpenAI-compatible local endpoints such as LM Studio are supported for
+  embeddings and text generation
 
 ## Codex
 

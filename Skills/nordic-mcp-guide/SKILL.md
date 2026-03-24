@@ -175,8 +175,8 @@ After completing a search workflow, deliver:
 | Tool | Key params | Description |
 |------|-----------|-------------|
 | `ov_content_read` | `uri` | Read stored content |
-| `ov_content_abstract` | `uri` | Generate abstract of content |
-| `ov_content_overview` | `uri` | Generate overview of a collection |
+| `ov_content_abstract` | `uri` | Read the generated `.abstract.md` summary for a directory |
+| `ov_content_overview` | `uri` | Read the generated `.overview.md` summary for a directory |
 
 ### 9. Search (4 tools)
 
@@ -263,6 +263,8 @@ collection-based items API.
   is difficult to recover from.
 - **Poll `ov_tasks_get` after `ov_pack_import`** — large packs are async;
   do not assume completion.
+- **Treat `ov_content_abstract` and `ov_content_overview` as reads, not writes**
+  — they return generated summary artifacts and do not synthesize on demand.
 - **Do not change `OPENVIKING_EMBED_MODEL` after data is stored** without
   recreating affected collections — dimension mismatch breaks search silently.
 - **Do not commit `container/.env`** — API keys must stay out of version control.
@@ -294,6 +296,9 @@ Key runtime facts:
 - REST base: `/api/v1/`
 - Auth: `Authorization: Bearer <OPENVIKING_ROOT_API_KEY>`
 - Embedding default: `text-embedding-3-large`, dimension `3072`
+- OpenAI-compatible endpoints such as LM Studio are supported when
+  `OPENVIKING_EMBED_*` and `OPENVIKING_VLM_*` are configured to match the
+  loaded local models
 - Data directory: `$HOME/.nordic_mcp/openviking-data`
 
 ## Adjacent Skills

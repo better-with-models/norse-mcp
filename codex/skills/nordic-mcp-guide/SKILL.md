@@ -49,6 +49,8 @@ Before calling search tools, confirm:
 
 - The target resource subtree exists and contains indexed content
 - The query is a natural-language phrase, not just keywords
+- `ov_content_abstract` and `ov_content_overview` read generated summary
+  artifacts; they do not synthesize summaries on demand
 
 ## Architecture
 
@@ -107,12 +109,15 @@ Recommended verification path:
 4. `ov_resources_temp_upload` then `ov_resources_create`
 5. `ov_fs_ls` or `nordic_list_items`, depending on whether you ingested files or
    collection items
+6. `ov_content_overview` only after ingest or reindex has completed
 
 ## Guardrails
 
 - Never delete a collection without explicit user confirmation.
 - Check `ov_health_get` before any write sequence.
 - Prefer `viking://resources/...` URIs in new workflows.
+- OpenAI-compatible local endpoints such as LM Studio are supported for
+  embeddings and text generation when the env values match the loaded models.
 - Do not change the embedding model after data has been stored unless you plan to rebuild affected collections.
 - Do not commit `container/.env`.
 

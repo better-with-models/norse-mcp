@@ -6,7 +6,8 @@ searchable content.
 ## Requirements
 
 - Docker Desktop (or Docker Engine + Compose) ≥ 20.10
-- An OpenAI API key (for embeddings and optional VLM)
+- An OpenAI-compatible endpoint and credentials for embeddings and optional VLM
+  (OpenAI or a local OpenAI-compatible server such as LM Studio)
 - Claude desktop app or Claude Code with plugin support
 - Codex, if you want to use the Codex skill + MCP flow
 
@@ -24,8 +25,19 @@ OPENVIKING_ROOT_API_KEY=your-secret-key-here
 OPENAI_API_KEY=sk-...
 ```
 
-Leave the other values at their defaults unless you need a different embedding
-model or data directory.
+If you are using a local OpenAI-compatible server instead of the public OpenAI
+API, also update:
+
+```text
+OPENVIKING_EMBED_API_BASE=...
+OPENVIKING_EMBED_MODEL=...
+OPENVIKING_EMBED_DIMENSION=...
+OPENVIKING_VLM_API_BASE=...
+OPENVIKING_VLM_MODEL=...
+```
+
+Leave the other values at their defaults unless you need a different model or
+data directory.
 
 ## Step 2: Run the preflight check
 
@@ -114,10 +126,16 @@ Prefer `viking://resources/...` URIs in new workflows. The wrapper still accepts
 { "tool": "ov_fs_ls", "args": { "uri": "viking://resources/my-docs", "simple": true } }
 
 { "tool": "ov_system_status_get", "args": {} }
+
+{ "tool": "ov_content_overview", "args": { "uri": "viking://resources/my-docs" } }
+
+{ "tool": "ov_content_abstract", "args": { "uri": "viking://resources/my-docs" } }
 ```
 
 Confirm the resource list matches what you ingested and the system remains
-healthy.
+healthy. `ov_content_overview` and `ov_content_abstract` read the generated
+summary artifacts for the directory, so ingest or reindex must complete before
+you call them.
 
 ## Stopping the stack
 
