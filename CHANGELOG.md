@@ -29,6 +29,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated the setup and skill docs to clarify that `ov_content_abstract` and
   `ov_content_overview` read generated summary artifacts rather than generating
   them on demand.
+- Fixed `ov_resources_create(target=...)` to translate to OpenViking's upstream
+  `to` field, restoring direct-target ingest behavior.
+- Moved LM Studio score sanitization earlier in the runtime path so invalid
+  vector scores are filtered before they reach retriever candidate assembly.
 
 ## [0.1.1] — 2026-03-23
 

@@ -108,7 +108,9 @@ Using the MCP tools:
 ```
 
 Prefer `viking://resources/...` URIs in new workflows. The wrapper still accepts
-`ov:///...` as a compatibility alias if you see it in older examples.
+`ov:///...` as a compatibility alias if you see it in older examples. The MCP
+tool keeps the public `target` argument and translates it to OpenViking's
+upstream `to` field internally.
 
 ## Step 6: Search
 
@@ -135,7 +137,9 @@ Prefer `viking://resources/...` URIs in new workflows. The wrapper still accepts
 Confirm the resource list matches what you ingested and the system remains
 healthy. `ov_content_overview` and `ov_content_abstract` read the generated
 summary artifacts for the directory, so ingest or reindex must complete before
-you call them.
+you call them. With LM Studio or another OpenAI-compatible local endpoint, the
+server now filters invalid vector scores defensively before they reach the
+search response.
 
 ## Stopping the stack
 

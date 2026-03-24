@@ -52,7 +52,7 @@ export function register(server, client, _config) {
     async ({ path, target, reason, instruction, wait, timeout, watch_interval, account_id, user_id }) => {
       const body = {
         path,
-        ...(target         != null && { target: normalizeUriAlias(target) }),
+        ...(target         != null && { to: normalizeUriAlias(target) }),
         ...(reason         != null && { reason }),
         ...(instruction    != null && { instruction }),
         ...(wait           != null && { wait }),

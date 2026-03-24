@@ -59,6 +59,9 @@ The native OpenViking resource scope is `viking://resources/...`.
 - OpenAI-compatible local endpoints such as LM Studio are supported for
   embeddings and text generation
 
+`ov_resources_create` still accepts `target` at the MCP layer. The wrapper
+translates that to OpenViking's upstream `to` field before calling the REST API.
+
 ## Codex
 
 Codex installation is separate from Claude plugin installation:

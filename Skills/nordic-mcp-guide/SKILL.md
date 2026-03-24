@@ -135,7 +135,7 @@ After completing a search workflow, deliver:
 | Tool | Key params | Description |
 |------|-----------|-------------|
 | `ov_resources_temp_upload` | `content`, `filename` | Upload temp file for processing |
-| `ov_resources_create` | `path`, `target`, `wait`, `timeout` | Ingest file/URL into collection |
+| `ov_resources_create` | `path`, `target`, `wait`, `timeout` | Ingest file/URL into collection; wrapper maps `target` to upstream `to` |
 
 ### 4. Skills (1 tool)
 
@@ -265,6 +265,8 @@ collection-based items API.
   do not assume completion.
 - **Treat `ov_content_abstract` and `ov_content_overview` as reads, not writes**
   — they return generated summary artifacts and do not synthesize on demand.
+- **Keep using `target` with `ov_resources_create`**
+  — the MCP wrapper translates it to the upstream REST field for you.
 - **Do not change `OPENVIKING_EMBED_MODEL` after data is stored** without
   recreating affected collections — dimension mismatch breaks search silently.
 - **Do not commit `container/.env`** — API keys must stay out of version control.
@@ -298,7 +300,8 @@ Key runtime facts:
 - Embedding default: `text-embedding-3-large`, dimension `3072`
 - OpenAI-compatible endpoints such as LM Studio are supported when
   `OPENVIKING_EMBED_*` and `OPENVIKING_VLM_*` are configured to match the
-  loaded local models
+  loaded local models, and invalid vector scores are filtered before search
+  results are returned
 - Data directory: `$HOME/.nordic_mcp/openviking-data`
 
 ## Adjacent Skills

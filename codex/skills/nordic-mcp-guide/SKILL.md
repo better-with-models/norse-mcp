@@ -51,6 +51,8 @@ Before calling search tools, confirm:
 - The query is a natural-language phrase, not just keywords
 - `ov_content_abstract` and `ov_content_overview` read generated summary
   artifacts; they do not synthesize summaries on demand
+- `ov_resources_create` keeps the public `target` parameter; the wrapper maps
+  it to the upstream REST `to` field internally
 
 ## Architecture
 
@@ -118,6 +120,7 @@ Recommended verification path:
 - Prefer `viking://resources/...` URIs in new workflows.
 - OpenAI-compatible local endpoints such as LM Studio are supported for
   embeddings and text generation when the env values match the loaded models.
+- The server filters invalid vector scores before returning search results.
 - Do not change the embedding model after data has been stored unless you plan to rebuild affected collections.
 - Do not commit `container/.env`.
 

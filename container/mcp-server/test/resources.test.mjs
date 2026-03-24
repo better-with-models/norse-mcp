@@ -87,7 +87,8 @@ describe('resources tools', () => {
         watch_interval: 5,
       });
       const body = JSON.parse(capturedCalls[0].opts.body);
-      assert.equal(body.target, 'viking://resources/dest');
+      assert.equal(body.to, 'viking://resources/dest');
+      assert.ok(!('target' in body));
       assert.equal(body.reason, 'test ingest');
       assert.equal(body.instruction, 'summarise');
       assert.equal(body.wait, true);
@@ -99,9 +100,20 @@ describe('resources tools', () => {
       mockFetch(ok({}));
       await server.tools['ov_resources_create']({ path: '/tmp/x.md' });
       const body = JSON.parse(capturedCalls[0].opts.body);
-      assert.ok(!('target' in body));
+      assert.ok(!('to' in body));
       assert.ok(!('reason' in body));
       assert.ok(!('wait' in body));
+    });
+
+    it('normalizes target alias and sends upstream to field', async () => {
+      mockFetch(ok({}));
+      await server.tools['ov_resources_create']({
+        path: '/tmp/alias.md',
+        target: 'ov:///nested/doc.md',
+      });
+      const body = JSON.parse(capturedCalls[0].opts.body);
+      assert.equal(body.to, 'viking://resources/nested/doc.md');
+      assert.ok(!('target' in body));
     });
   });
 

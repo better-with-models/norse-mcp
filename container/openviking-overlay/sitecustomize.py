@@ -63,6 +63,17 @@ def _coerce_finite_float(value):
     return result if math.isfinite(result) else None
 
 
+def _format_score_context(record) -> str:
+    if not isinstance(record, dict):
+        return ""
+    pieces = []
+    for key in ("uri", "context_type", "level", "account_id", "owner_space"):
+        value = record.get(key)
+        if value not in (None, ""):
+            pieces.append(f"{key}={value}")
+    return " ".join(pieces)
+
+
 def _log_blank_overview(dir_uri: str, kind: str, prompt_chars: int, extra: str = "") -> None:
     from openviking.storage.queuefs.semantic_processor import get_openviking_config
 
@@ -90,6 +101,7 @@ def _patch_hierarchical_retriever() -> None:
 
     original_convert = hr_mod.HierarchicalRetriever._convert_to_matched_contexts
     original_retrieve = hr_mod.HierarchicalRetriever.retrieve
+    original_rerank_scores = hr_mod.HierarchicalRetriever._rerank_scores
 
     async def patched_convert_to_matched_contexts(self, candidates, ctx):
         results = []
@@ -211,9 +223,88 @@ def _patch_hierarchical_retriever() -> None:
             thinking_trace=result.thinking_trace,
         )
 
+    def patched_rerank_scores(self, query, documents, fallback_scores):
+        scores = original_rerank_scores(self, query, documents, fallback_scores)
+        normalized_scores = []
+
+        for idx, (score, fallback) in enumerate(zip(scores, fallback_scores)):
+            finite_score = _coerce_finite_float(score)
+            if finite_score is None:
+                safe_fallback = _coerce_finite_float(fallback)
+                logger.warning(
+                    "[nordic-mcp patch] Invalid rerank score at index=%s score=%r fallback=%r; "
+                    "using %r",
+                    idx,
+                    score,
+                    fallback,
+                    safe_fallback if safe_fallback is not None else 0.0,
+                )
+                normalized_scores.append(safe_fallback if safe_fallback is not None else 0.0)
+                continue
+            normalized_scores.append(finite_score)
+
+        return normalized_scores
+
     hr_mod.HierarchicalRetriever._convert_to_matched_contexts = patched_convert_to_matched_contexts
     hr_mod.HierarchicalRetriever.retrieve = patched_retrieve
+    hr_mod.HierarchicalRetriever._rerank_scores = patched_rerank_scores
     hr_mod.HierarchicalRetriever._nordic_mcp_patched = True
+
+
+def _patch_vectordb_adapter() -> None:
+    from openviking.storage.vectordb_adapters import base as adapter_mod
+
+    if getattr(adapter_mod.CollectionAdapter, "_nordic_mcp_patched", False):
+        return
+
+    original_query = adapter_mod.CollectionAdapter.query
+
+    def patched_query(
+        self,
+        *,
+        query_vector=None,
+        sparse_query_vector=None,
+        filter=None,
+        limit=10,
+        offset=0,
+        output_fields=None,
+        order_by=None,
+        order_desc=False,
+    ):
+        records = original_query(
+            self,
+            query_vector=query_vector,
+            sparse_query_vector=sparse_query_vector,
+            filter=filter,
+            limit=limit,
+            offset=offset,
+            output_fields=output_fields,
+            order_by=order_by,
+            order_desc=order_desc,
+        )
+
+        safe_records = []
+        for record in records:
+            raw_score = record.get("_score", 0.0)
+            finite_score = _coerce_finite_float(raw_score)
+            if finite_score is None:
+                logger.warning(
+                    "[nordic-mcp patch] Dropping vector result with non-finite raw score "
+                    "score=%r %s",
+                    raw_score,
+                    _format_score_context(record),
+                )
+                continue
+
+            if finite_score != raw_score:
+                record = dict(record)
+                record["_score"] = finite_score
+            safe_records.append(record)
+
+        return safe_records
+
+    adapter_mod.CollectionAdapter.query = patched_query
+    adapter_mod.CollectionAdapter._nordic_mcp_patched = True
 
 
 def _patch_semantic_processor() -> None:
@@ -423,6 +514,7 @@ def _patch_viking_fs() -> None:
 
 
 def _apply_patch_overlay() -> None:
+    _patch_vectordb_adapter()
     _patch_hierarchical_retriever()
     _patch_semantic_processor()
     _patch_viking_fs()
